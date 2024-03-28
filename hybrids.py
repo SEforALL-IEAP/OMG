@@ -11,12 +11,15 @@ from io import StringIO
 
 @numba.njit
 def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, inv_eff, n_dis, n_chg, dod_max,
-                           energy_per_hh, diesel_price, end_year, start_year, pv_cost, charge_controller, pv_inverter,
+                           diesel_price, end_year, start_year, pv_cost, charge_controller, pv_inverter,
                            pv_om, diesel_cost, diesel_om, battery_inverter_life, battery_inverter_cost, diesel_life,
                            pv_life, battery_cost, discount_rate, lpsp_max, diesel_limit, full_life_cycles):
     pv = float(configuration[0])
     battery = float(configuration[1])
+    usable_battery = battery * dod_max  # ensure the battery never goes below max depth of discharge
     diesel = float(configuration[2])
+
+    annual_demand = load_curve.sum()
 
     # First the PV generation and net load (load - pv generation) is calculated for each hour of the year
     net_load, pv_gen = pv_generation(temp, ghi, pv, load_curve, inv_eff)
@@ -24,9 +27,9 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
     # For each hour of the year, diesel generation, battery charge/discharge and performance variables are calculated.
     diesel_generation_share, battery_life, unmet_demand_share, annual_fuel_consumption, \
         excess_gen_share, battery_soc_curve, diesel_gen_curve = \
-        year_simulation(battery_size=battery, diesel_capacity=diesel, net_load=net_load, hour_numbers=hour_numbers,
-                        inv_eff=inv_eff, n_dis=n_dis, n_chg=n_chg, dod_max=dod_max,
-                        energy_per_hh=energy_per_hh, full_life_cycles=full_life_cycles)
+        year_simulation(battery_size=usable_battery, diesel_capacity=diesel, net_load=net_load,
+                        hour_numbers=hour_numbers, inv_eff=inv_eff, n_dis=n_dis, n_chg=n_chg,
+                        annual_demand=annual_demand, full_life_cycles=full_life_cycles, dod_max=dod_max)
 
     # If the system could meet the demand in a satisfactory manner (i.e. with high enough reliability and low enough
     # share of the generation coming from the diesel generator), then the LCOE is calculated. Else 99 is returned.
@@ -41,7 +44,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
             om_cost, npc = calculate_hybrid_lcoe(diesel_price=diesel_price,
                                                  end_year=end_year,
                                                  start_year=start_year,
-                                                 energy_per_hh=energy_per_hh,
+                                                 annual_demand=annual_demand,
                                                  fuel_usage=annual_fuel_consumption,
                                                  pv_panel_size=pv,
                                                  pv_cost=pv_cost,
@@ -59,11 +62,10 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
                                                  battery_life=battery_life,
                                                  battery_size=battery,
                                                  battery_cost=battery_cost,
-                                                 dod_max=dod_max,
                                                  discount_rate=discount_rate)
 
-    return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery / dod_max, \
-        battery_life, pv, diesel, load_curve, pv_gen, battery_soc_curve, diesel_gen_curve, npc
+    return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
+        battery_life, pv, diesel, npc
 
 @numba.njit
 def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
@@ -73,6 +75,50 @@ def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
     pv_gen = pv_capacity * 0.9 * ghi / 1000 * (1 - k_t * (t_cell - 25))  # PV generation in the hour
     net_load = load - pv_gen * inv_eff  # remaining load not met by PV panels
     return net_load, pv_gen
+
+@numba.njit
+def year_simulation(battery_size, diesel_capacity, net_load, hour_numbers, inv_eff, n_dis, n_chg,
+                    annual_demand, full_life_cycles, dod_max):
+    soc = 0.5  # Initial SOC of battery
+
+    # Variables for tracking annual performance information
+    annual_unmet_demand = 0
+    annual_excess_gen = 0
+    annual_diesel_gen = 0
+    annual_battery_use = 0
+    annual_fuel_consumption = 0
+
+    # Arrays for tracking hourly values throughout the year (for plotting purposes)
+    diesel_gen_curve = []
+    battery_soc_curve = []
+
+    # Run the simulation for each hour during one year
+    for hour in hour_numbers:
+        load = net_load[int(hour)]
+
+        diesel_gen, annual_fuel_consumption, annual_diesel_gen, annual_battery_use, soc, annual_unmet_demand, \
+            annual_excess_gen = hour_simulation(hour, soc, load, diesel_capacity, annual_fuel_consumption,
+                                                annual_diesel_gen,
+                                                inv_eff, n_dis, n_chg, battery_size, annual_battery_use,
+                                                annual_unmet_demand,
+                                                annual_excess_gen)
+
+        # Update plotting arrays
+        diesel_gen_curve.append(diesel_gen)
+        battery_soc_curve.append(soc)
+
+    # When a full year has been simulated, calculate battery life and performance metrics
+    if (battery_size > 0) & (annual_battery_use > 0):
+        battery_life = min(round(full_life_cycles / (annual_battery_use)), 20)  # ToDo should dod_max be included here?
+    else:
+        battery_life = 20
+
+    unmet_demand_share = annual_unmet_demand / annual_demand  # LPSP is calculated
+    excess_gen_share = annual_excess_gen / annual_demand
+    diesel_generation_share = annual_diesel_gen / annual_demand
+
+    return diesel_generation_share, battery_life, unmet_demand_share, annual_fuel_consumption, \
+        excess_gen_share, battery_soc_curve, diesel_gen_curve
 
 
 @numba.njit
@@ -181,62 +227,16 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
 
 
 @numba.njit
-def year_simulation(battery_size, diesel_capacity, net_load, hour_numbers, inv_eff, n_dis, n_chg, dod_max,
-                    energy_per_hh, full_life_cycles):
-    soc = 0.5  # Initial SOC of battery
-
-    # Variables for tracking annual performance information
-    annual_unmet_demand = 0
-    annual_excess_gen = 0
-    annual_diesel_gen = 0
-    annual_battery_use = 0
-    annual_fuel_consumption = 0
-
-    # Arrays for tracking hourly values throughout the year (for plotting purposes)
-    diesel_gen_curve = []
-    battery_soc_curve = []
-
-    # Run the simulation for each hour during one year
-    for hour in hour_numbers:
-        load = net_load[int(hour)]
-
-        diesel_gen, annual_fuel_consumption, annual_diesel_gen, annual_battery_use, soc, annual_unmet_demand, \
-            annual_excess_gen = hour_simulation(hour, soc, load, diesel_capacity, annual_fuel_consumption,
-                                                annual_diesel_gen,
-                                                inv_eff, n_dis, n_chg, battery_size, annual_battery_use,
-                                                annual_unmet_demand,
-                                                annual_excess_gen)
-
-        # Update plotting arrays
-        diesel_gen_curve.append(diesel_gen)
-        battery_soc_curve.append(soc)
-
-    # When a full year has been simulated, calculate battery life and performance metrics
-    if (battery_size > 0) & (annual_battery_use > 0):
-        battery_life = min(round(full_life_cycles / annual_battery_use), 20)
-    else:
-        battery_life = 20
-
-    unmet_demand_share = annual_unmet_demand / energy_per_hh  # LPSP is calculated
-    excess_gen_share = annual_excess_gen / energy_per_hh
-    diesel_generation_share = annual_diesel_gen / energy_per_hh
-
-    battery_soc_curve = [i * dod_max + (1 - dod_max) for i in battery_soc_curve]
-
-    return diesel_generation_share, battery_life, unmet_demand_share, annual_fuel_consumption, \
-        excess_gen_share, battery_soc_curve, diesel_gen_curve
-
-
-@numba.njit
-def calculate_hybrid_lcoe(diesel_price, end_year, start_year, energy_per_hh,
+def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
                           fuel_usage, pv_panel_size, pv_cost, pv_life, pv_om, charge_controller, pv_inverter_cost,
                           diesel_capacity, diesel_cost, diesel_om, diesel_life,
                           battery_size, battery_cost, battery_life, battery_inverter_cost, battery_inverter_life,
-                          dod_max, load_curve, discount_rate):
+                          load_curve, discount_rate):
+
     # Necessary information for calculation of LCOE is defined
-    project_life = end_year - start_year
-    generation = np.ones(project_life) * energy_per_hh
-    generation[0] = 0
+    project_life = end_year - start_year  # Calculate project lifetime
+    generation = np.ones(project_life) * annual_demand  # array of annual demand
+    generation[0] = 0  # In first year, there is assumed to be no generation
 
     # Calculate LCOE
     sum_el_gen = 0
@@ -247,6 +247,8 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, energy_per_hh,
     total_om_cost = 0
     npc = 0
 
+    # Iterate over each year in the project life and account for the costs that incur
+    # This includes investment, OM, fuel, and reinvestment in any year a technology lifetime expires
     for year in prange(project_life + 1):
         salvage = 0
         inverter_investment = 0
@@ -260,17 +262,19 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, energy_per_hh,
         total_fuel_cost += fuel_costs / (1 + discount_rate) ** year
         total_om_cost += om_costs / (1 + discount_rate) ** year
 
+        # Here we check if there is need for investment/reinvestment
         if year % battery_inverter_life == 0:
-            inverter_investment = max(load_curve) * battery_inverter_cost  # Battery inverter
+            inverter_investment = max(load_curve) * battery_inverter_cost  # Battery inverter, sized based on the peak demand in the year
         if year % diesel_life == 0:
             diesel_investment = diesel_capacity * diesel_cost
         if year % pv_life == 0:
-            pv_investment = pv_panel_size * (pv_cost + charge_controller + pv_inverter_cost)  # PV inverter
+            pv_investment = pv_panel_size * (pv_cost + charge_controller + pv_inverter_cost)  # PV inverter and charge controller are sized based on the PV panel rated capacity
         if year % battery_life == 0:
-            battery_investment = battery_size * battery_cost / dod_max
+            battery_investment = battery_size * battery_cost
 
+        # In the final year, the salvage value of all components is calculated based on remaining life
         if year == project_life:
-            salvage = (1 - (project_life % battery_life) / battery_life) * battery_cost * battery_size / dod_max + \
+            salvage = (1 - (project_life % battery_life) / battery_life) * battery_cost * battery_size + \
                       (1 - (project_life % diesel_life) / diesel_life) * diesel_capacity * diesel_cost + \
                       (1 - (project_life % pv_life) / pv_life) * pv_panel_size * (
                               pv_cost + charge_controller + pv_inverter_cost) + \
@@ -278,7 +282,7 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, energy_per_hh,
                 load_curve) * battery_inverter_cost
 
             total_battery_investment -= (1 - (
-                    project_life % battery_life) / battery_life) * battery_cost * battery_size / dod_max
+                    project_life % battery_life) / battery_life) * battery_cost * battery_size
 
         investment += diesel_investment + pv_investment + battery_investment + inverter_investment - salvage
         total_battery_investment += battery_investment
@@ -290,16 +294,13 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, energy_per_hh,
                 inverter_investment) / ((1 + discount_rate) ** year)
 
         if year > 0:
-            sum_el_gen += energy_per_hh / ((1 + discount_rate) ** year)
+            sum_el_gen += annual_demand / ((1 + discount_rate) ** year)
 
     return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc
 
 
-
-
-
 @numba.njit
-def calc_load_curve(tier, energy_per_hh):
+def calc_load_curve(tier, annual_demand):
     # the values below define the load curve for the five tiers. The values reflect the share of the daily demand
     # expected in each hour of the day (sum of all values for one tier = 1)
     tier5_load_curve = [0.021008403, 0.021008403, 0.021008403, 0.021008403, 0.027310924, 0.037815126,
@@ -334,7 +335,7 @@ def calc_load_curve(tier, energy_per_hh):
     else:
         load_curve = tier5_load_curve * 365
 
-    return np.array(load_curve) * energy_per_hh / 365
+    return np.array(load_curve) * annual_demand / 365
 
 
 def get_pv_data(latitude, longitude, token, output_folder):
