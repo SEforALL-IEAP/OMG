@@ -146,7 +146,7 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
         else:  # If batteries are insufficient, diesel generator is used
             diesel_gen = min(max(net_load - battery_dispatchable, 0.4 * diesel_capacity), diesel_capacity)
 
-    elif 17 > hour > 23:
+    elif 17 < hour <= 23:
         # During the evening, the diesel generator is dispatched primarily.
         # During this time, diesel generator seeks to meet load and charge batteries for the night if possible.
         # Batteries are dispatched if diesel generation is insufficient.
