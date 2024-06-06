@@ -1,0 +1,10 @@
+,Name,Value
+0,LCOE Generation [USD/kWh],0.819
+1,LCOE Distribution [USD/KWh],0.134
+2,PV Capacity [kWp],15.7
+3,Battery capacity [kWh],65.4
+4,Diesel Capacity [kWh],1
+5,Investments,--
+6,Total cost generation [USD],184398.0
+7,Total cost grid  [USD],33871.0
+8,Total Investment [USD],218269.0
