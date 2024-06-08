@@ -296,7 +296,7 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
         if year > 0:
             sum_el_gen += annual_demand / ((1 + discount_rate) ** year)
 
-    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc
+    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, om_costs, npc
 
 
 @numba.njit
