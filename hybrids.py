@@ -41,7 +41,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
         npc = 0
     else:
         lcoe, investment, battery_investment, fuel_cost, \
-            om_cost, npc = calculate_hybrid_lcoe(diesel_price=diesel_price,
+            om_cost, npc, fuel_usage = calculate_hybrid_lcoe(diesel_price=diesel_price,
                                                  end_year=end_year,
                                                  start_year=start_year,
                                                  annual_demand=annual_demand,
@@ -65,7 +65,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
                                                  discount_rate=discount_rate)
 
     return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
-        battery_life, pv, diesel, npc
+        battery_life, pv, diesel, npc, fuel_usage
 
 @numba.njit
 def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
@@ -296,7 +296,7 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
         if year > 0:
             sum_el_gen += annual_demand / ((1 + discount_rate) ** year)
 
-    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc
+    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc, fuel_usage
 
 
 @numba.njit

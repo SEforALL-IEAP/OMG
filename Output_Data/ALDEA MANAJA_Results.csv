@@ -1,10 +1,21 @@
 ,Name,Value
-0,LCOE Generation [USD/kWh],0.819
-1,LCOE Distribution [USD/KWh],0.134
-2,PV Capacity [kWp],15.7
-3,Battery capacity [kWh],65.4
-4,Diesel Capacity [kWh],1
-5,Investments,--
-6,Total cost generation [USD],184398.0
-7,Total cost grid  [USD],33871.0
-8,Total Investment [USD],218269.0
+0,PV Capacity [kWp],15.8
+1,Battery capacity [kWh],65.2
+2,Diesel Capacity [kW],0.5
+3,Trunk Line [km],1.4
+4,Secondary Line [km],2.6
+5,Service Drops [km],6.1
+6,No Poles,44.0
+7,CAPEX generation [USD],118000.0
+8,Cost of Assets [USD],113045.0
+9,Cost of Labour [USD],1580.0
+10,Cost of Transport [USD],3375.0
+11,CAPEX Distribution [USD],24197.0
+12,Total CAPEX [USD],142197.0
+13,LCOE Generation [USD/kWh],0.489
+14,LCOE Distribution [USD/KWh],0.124
+15,Annual OPEX Generation [USD],70919.0
+16,Annual OPEX Distribution [USD],1210.0
+17,Annual OPEX SG&A [USD],2250.0
+18,Total OPEX [USD],74379.0
+19,NPC [USD],154226.0
