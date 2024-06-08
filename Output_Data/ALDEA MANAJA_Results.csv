@@ -1,11 +1,16 @@
 ,Name,Value
+<<<<<<< HEAD
 0,PV Capacity [kWp],15.8
+=======
+0,PV Capacity [kWp],15.7
+>>>>>>> 8dbc0cce511f7db4b788b169cb09485cbc2f5bb7
 1,Battery capacity [kWh],65.2
 2,Diesel Capacity [kW],0.5
 3,Trunk Line [km],1.4
 4,Secondary Line [km],2.6
 5,Service Drops [km],6.1
 6,No Poles,44.0
+<<<<<<< HEAD
 7,CAPEX generation [USD],118000.0
 8,Cost of Assets [USD],113045.0
 9,Cost of Labour [USD],1580.0
@@ -19,3 +24,18 @@
 17,Annual OPEX SG&A [USD],2250.0
 18,Total OPEX [USD],74379.0
 19,NPC [USD],154226.0
+=======
+7,CAPEX generation [USD],184000.0
+8,Cost of Assets [USD],179055.0
+9,Cost of Labour [USD],1570.0
+10,Cost of Transport [USD],3375.0
+11,CAPEX Distribution [USD],24197.0
+12,Total CAPEX [USD],208197.0
+13,LCOE Generation [USD/kWh],0.821
+14,LCOE Distribution [USD/KWh],0.124
+15,Annual OPEX Generation [USD],10949.0
+16,Annual OPEX Distribution [USD],1210.0
+17,Annual OPEX SG&A [USD],2250.0
+18,Total OPEX [USD],14409.0
+19,NPC [USD],258182.0
+>>>>>>> 8dbc0cce511f7db4b788b169cb09485cbc2f5bb7
