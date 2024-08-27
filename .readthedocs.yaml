@@ -6,7 +6,7 @@ build:
     python: "3.11"
 
 sphinx:
-  configuration: usermanual/source/conf.py
+  configuration: docs/source/conf.py
 
 formats:
   - pdf
