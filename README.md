@@ -1,4 +1,4 @@
-# MiniGridOpt
+# OnSSET for Mini-Grids (OMG)
 Quick techno-economic analysis of potential mini-grid sites. The script is based on [OnSSET](http://www.onsset.org/) model with modifications to accommodate specifications related to the overall viability of mini-grids.
 
 ## Content
@@ -11,7 +11,7 @@ This repository contains:
 
 **Requirements**
 
-The mini-grid module (as well as all supporting scripts in this repo) have been developed in Python 3. We recommend installing [Anaconda's free distribution](https://www.anaconda.com/distribution/) as suited for your operating system. 
+The mini-grid module (as well as all supporting scripts in this repo) has been developed in Python 3. We recommend installing [Anaconda's free distribution](https://www.anaconda.com/distribution/) as suited for your operating system. 
 
 **Install the repository from GitHub**
 
@@ -19,14 +19,14 @@ After installing Anaconda you can download the repository directly or clone it t
 
 ```
 > conda install git
-> git clone https://github.com/SEforALL-IEAP/MiniGridOpt.git
+> git clone https://github.com/SEforALL-IEAP/OMG.git
 ```
-Once installed, open anaconda prompt and move to your local "clustering" directory using:
+Once installed, open anaconda prompt and move to your local "OMG" directory using:
 ```
-> cd ..\MiniGridOpt
+> cd ..\OMG
 ```
 
-In order to be able to run the come (.ipynb) you have to install all necessary packages. "geospatial_env.yml" contains all of these and can be easily set up by creating a new virtual environment using:
+To be able to run the come (.ipynb) you have to install all necessary packages. "geospatial_env.yml" contains all of these and can be easily set up by creating a new virtual environment using:
 
 ```
 conda env create --name geospatial_env --file geospatial_env.yml
@@ -52,8 +52,8 @@ To be added
 
 ## Credits
 
-**Conceptualization:** [Alexandros Konrkovelos](https://github.com/akorkovelos)<br />
-**Methodology:** [Alexandros Konrkovelos](https://github.com/akorkovelos)<br />
-**Software:** [Alexandros Konrkovelos](https://github.com/akorkovelos)<br />
-**Validation:** [Alexandros Konrkovelos](https://github.com/akorkovelos) <br />
-**Supervision and Advisory support:** TBD <br />
+**Conceptualization:** [Alexandros Korkovelos](https://github.com/akorkovelos), [Andreas Sahlberg](https://github.com/AndreasSahlberg)<br />
+**Methodology:** [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Alexandros Korkovelos](https://github.com/akorkovelos)<br />
+**Software:** [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Alexandros Korkovelos](https://github.com/akorkovelos), [Julian Cantor](https://github.com/julcan7)<br />
+**Validation:** [Alexandros Korkovelos](https://github.com/akorkovelos), [Andreas Sahlberg](https://github.com/AndreasSahlberg),[Julian Cantor](https://github.com/julcan7) <br />
+**Supervision and Advisory support:** Nishant Narayan <br />
