@@ -47,7 +47,7 @@ With the environment activated, you can now move to the main directory and start
 ```
 
 ## Changelog
-**28-February-2024**: Original code base developed
+**28-February-2024**: Original code base developed <br />
 **27-August-2024**: Updated code base published
 
 ## Resources
