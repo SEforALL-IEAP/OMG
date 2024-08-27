@@ -57,7 +57,7 @@ Documentation is available [here](https://omg-userguide.readthedocs.io/en/latest
 
 **Funding** [SEforALL](https://www.seforall.org/)<br />
 **Conceptualization:** [Alexandros Korkovelos](https://github.com/akorkovelos), [Andreas Sahlberg](https://github.com/AndreasSahlberg)<br />
-**Methodology:** [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Alexandros Korkovelos](https://github.com/akorkovelos)<br />
+**Methodology:** [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Alexandros Korkovelos](https://github.com/akorkovelos),  [Davide Mazzoni](https://github.com/davidemazzoni2) <br />
 **Software:** [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Alexandros Korkovelos](https://github.com/akorkovelos), [Julian Cantor](https://github.com/julcan7)<br />
-**Validation:** [Alexandros Korkovelos](https://github.com/akorkovelos), [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Julian Cantor](https://github.com/julcan7) <br />
-**Supervision and Advisory support:** Nishant Narayan <br />
+**Validation:** [Alexandros Korkovelos](https://github.com/akorkovelos), [Andreas Sahlberg](https://github.com/AndreasSahlberg), [Julian Cantor](https://github.com/julcan7), [Cristina Dominguez](https://github.com/cristinadomher) <br />
+**Supervision and Advisory support:** Nishant Narayan, Irene Calvé Saborit <br />

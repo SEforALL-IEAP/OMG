@@ -1,4 +1,4 @@
-﻿Future Scenarios module
+﻿Environmental resources module
 =================================
 
 Overview

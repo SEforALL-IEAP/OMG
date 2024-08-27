@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'OnSSET for Mini Grids'
-copyright = '2024, Alexandros Korkovelos, Andreas Sahlberg, Julian Cantor'
+copyright = '2024, SEforALL-UIEP'
 author = 'SEforALL-UIEP'
 release = '0.0.1'
 

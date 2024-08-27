@@ -1,4 +1,4 @@
-﻿Irrigation module
+﻿Mini-Grid optimization module
 =================================
 
 Overview

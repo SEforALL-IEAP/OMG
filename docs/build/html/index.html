@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Welcome to agrodem user’s guide! &mdash; OnSSET for Mini Grids 0.0.1 documentation</title>
+  <title>Welcome to OnSSET for Mini-Grids (OMG) user’s guide! &mdash; OnSSET for Mini Grids 0.0.1 documentation</title>
   
 
   
@@ -87,10 +87,10 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Irrigation%20module.html">Irrigation module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Downscaling%20module.html">Downscaling module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Future%20Scenarios%20module.html">Future Scenarios module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Post-harvesting%20module.html">Post-harvesting (&amp; post-analysis) module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Mini-Grid%20optimization%20module.html">Mini-Grid optimization module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Network%20layout%20generator%20module.html">Network layout generator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Electricity%20Demand%20module.html">Electricity Demand module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Environmental%20resources%20module.html">Environmental resources module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Credit%20and%20Contact.html">Credit and Contact</a></li>
 </ul>
 
@@ -138,7 +138,7 @@
     
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Welcome to agrodem user’s guide!</li>
+      <li>Welcome to OnSSET for Mini-Grids (OMG) user’s guide!</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -157,12 +157,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="welcome-to-agrodem-user-s-guide">
-<h1>Welcome to agrodem user’s guide!<a class="headerlink" href="#welcome-to-agrodem-user-s-guide" title="Permalink to this heading">¶</a></h1>
+  <div class="section" id="welcome-to-onsset-for-mini-grids-omg-user-s-guide">
+<h1>Welcome to OnSSET for Mini-Grids (OMG) user’s guide!<a class="headerlink" href="#welcome-to-onsset-for-mini-grids-omg-user-s-guide" title="Permalink to this heading">¶</a></h1>
 <p>Achieving universal electricity access by 2030 will require a rapid increase in the rate of new connections and in levels of investment, particularly in countries with low level of access to electricity. The challenge is significant. Designing and selecting the optimal electrification approach requires access to reliable data and information regarding electricity resource availability, demand levels, economic activity and functional infrastructure to name a few.</p>
 <p>The paucity of such information may hamper electrification progress. However, this situation is gradually being improved with the increasing availability of new data and analytical tools, especially in the field of geospatial analysis. Geographic Information Systems (GIS) and remote sensing techniques are becoming openly available and can now provide a range of location-specific information that has not been previously accessible. Take for example the field of agriculture, where data is rapidly approaching the scale of ‘big data’. They can provide farm stakeholders with spatial and temporal information about climate and local weather, soil conditions, crop quality, field biodiversity, and crop yields.</p>
-<p>Inclusion of agricultural electricity demand can enhance the richness of the geospatial electrification planning process. To date, demand estimation has typically depended on measurement of population density and an assumed average residential demand. On occasion, this is augmented by including some types of productive loads (e.g. large industrial or mining loads). However, existing and potential demand for electricity from activities related to agriculture and agro-business, is missed usually not included.</p>
-<p>This document presents an analytical and spatially explicit approach for estimating aspects of electricity requirements related to agricultural activities; namely irrigation and few selected post-harvest activities. The underlying work has been a collaborative effort between <a class="reference external" href="https://www.vivideconomics.com/">Vivid Economics</a> and <a class="reference external" href="https://www.energy.kth.se/research/energy-systems">KTH Royal Institute of Technology</a> and is part of a multi-year <a class="reference external" href="https://www.esmap.org/">ESMAP</a>-funded project - Geospatial Electrification Planning in the Africa Region (P165617) - aiming to facilitate the execution of geospatial electrification planning activities in various sub-Saharan African countries.</p>
+<p>Mini-grids have emerged as a crucial solution, especially in areas where traditional grid expansion is impractical or unreliable. Recognizing their potential, the World Bank estimates that mini-grids could bring electricity to 0.5 billion people within the next decade across thousands of potential sites in the subcontinent. However, assessing the viability of these sites involves considering multiple factors.</p>
+<p>Here we introduce <strong>“OnSSET for Mini-Grids (OMG),”</strong> an open-source Python-based tool that builds upon previous open-source electrification modelling framework efforts for techno-economic optimization, namely the Open Source Spatial Electrification Tool (OnSSET). The real added value of OMG lies in its automated methods to generate distribution network components for multiple sites simultaneously. Leveraging spatial analytics, the tool offers insights into optimal configurations of hybrid solar-diesel-storage systems and provides detailed bill-of-quantities for distribution design. OnSSET-MG offers full customizability of parameters and is designed to adjust to data availability per site. It can be integrated into a national least cost modelling framework or serve as a stand-alone tool for site-specific mini-grid analysis.</p>
+<div class="figure align-center" id="id1">
+<img alt="_images/omg_sample_results.JPG" src="_images/omg_sample_results.JPG" />
+<p class="caption"><span class="caption-text">Example of mini-grid distribution design and key components BoQ. Generation and distribution components required to connect and supply all buildings were automatically generated in a matter of seconds, taking into account the road network layout and local energy resource availability</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>This document presents an analytical and spatially explicit approach for estimating aspects of sizing mini-grids in data-deprived areas. The underlying work has been supported by <a class="reference external" href="https://www.seforall.org/programmes/universal-integrated-energy-plans">SEforALL</a> and is part of a multi-year <a class="reference external" href="https://energyalliance.org/">GEAPP</a> funded project aiming to facilitate the execution of geospatial electrification planning activities in various sub-Saharan African countries.</p>
 <p>The following sections provide a brief overview of this approach with indicative examples for the main processes included and links to the code developed to implement those processes in an open and reproducible way.</p>
 <div class="section" id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading">¶</a></h2>
@@ -173,35 +178,35 @@
 <li class="toctree-l2"><a class="reference internal" href="Overview.html#recommended-navigation-flow">Recommended navigation flow</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Irrigation%20module.html">Irrigation module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Irrigation%20module.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Irrigation%20module.html#input-data-preparation">Input data preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Irrigation%20module.html#parameterization-model-run">Parameterization &amp; model run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Irrigation%20module.html#output-data">Output data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Irrigation%20module.html#special-notes">Special notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Mini-Grid%20optimization%20module.html">Mini-Grid optimization module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Mini-Grid%20optimization%20module.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Mini-Grid%20optimization%20module.html#input-data-preparation">Input data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Mini-Grid%20optimization%20module.html#parameterization-model-run">Parameterization &amp; model run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Mini-Grid%20optimization%20module.html#output-data">Output data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Mini-Grid%20optimization%20module.html#special-notes">Special notes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Downscaling%20module.html">Downscaling module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Downscaling%20module.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Downscaling%20module.html#input-data-preparation">Input data preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Downscaling%20module.html#parameterization-model-run">Parameterization &amp; model run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Downscaling%20module.html#output-data">Output data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Downscaling%20module.html#special-notes">Special notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Network%20layout%20generator%20module.html">Network layout generator module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Network%20layout%20generator%20module.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Network%20layout%20generator%20module.html#input-data-preparation">Input data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Network%20layout%20generator%20module.html#parameterization-model-run">Parameterization &amp; model run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Network%20layout%20generator%20module.html#output-data">Output data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Network%20layout%20generator%20module.html#special-notes">Special notes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Future%20Scenarios%20module.html">Future Scenarios module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Future%20Scenarios%20module.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Future%20Scenarios%20module.html#input-data-preparation">Input data preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Future%20Scenarios%20module.html#model-run">Model run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Future%20Scenarios%20module.html#output-data">Output data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Future%20Scenarios%20module.html#special-notes">Special notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Electricity%20Demand%20module.html">Electricity Demand module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Electricity%20Demand%20module.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Electricity%20Demand%20module.html#parameterization-model-run">Parameterization &amp; model run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Electricity%20Demand%20module.html#output-data">Output data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Electricity%20Demand%20module.html#special-notes">Special notes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Post-harvesting%20module.html">Post-harvesting (&amp; post-analysis) module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Post-harvesting%20module.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Post-harvesting%20module.html#parameterization-model-run">Parameterization &amp; model run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Post-harvesting%20module.html#output-data">Output data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Post-harvesting%20module.html#special-notes">Special notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Environmental%20resources%20module.html">Environmental resources module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Environmental%20resources%20module.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Environmental%20resources%20module.html#input-data-preparation">Input data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Environmental%20resources%20module.html#model-run">Model run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Environmental%20resources%20module.html#output-data">Output data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Environmental%20resources%20module.html#special-notes">Special notes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Credit%20and%20Contact.html">Credit and Contact</a></li>
@@ -229,7 +234,7 @@
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright 2024, Alexandros Korkovelos, Andreas Sahlberg, Julian Cantor
+        &copy; Copyright 2024, SEforALL-UIEP
 
     </p>
   </div>

@@ -1,4 +1,4 @@
-﻿Downscaling module
+﻿Network layout generator module
 =================================
 
 Overview
