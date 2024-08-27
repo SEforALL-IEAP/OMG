@@ -1,0 +1,21 @@
+,Name,Value
+0,PV Capacity [kWp],15.9
+1,Battery capacity [kWh],65.7
+2,Diesel Capacity [kW],0.5
+3,Annual diesel fuel usage [litre],0.66
+4,Trunk Line [km],1.4
+5,Laterals [km],2.6
+6,Service lines [km],6.1
+7,No Poles,44.0
+8,CAPEX generation [USD],114035.0
+9,CAPEX Distribution [USD],24197.0
+10,Cost of Labour [USD],1590.0
+11,Cost of Transport [USD],3375.0
+12,Total CAPEX [USD],143197.0
+13,OPEX Generation [USD],71017.0
+14,OPEX Distribution [USD],1210.0
+15,OPEX SG&A [USD],2250.0
+16,Total OPEX [USD],74477.0
+17,Annual OPEX [USD],2979.08
+18,NPC [USD],154483.0
+19,lcoe [USD/kWh],0.614

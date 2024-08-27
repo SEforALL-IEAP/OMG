@@ -41,7 +41,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
         npc = 0
     else:
         lcoe, investment, battery_investment, fuel_cost, \
-            om_cost, npc = calculate_hybrid_lcoe(diesel_price=diesel_price,
+            om_cost, npc, fuel_usage = calculate_hybrid_lcoe(diesel_price=diesel_price,
                                                  end_year=end_year,
                                                  start_year=start_year,
                                                  annual_demand=annual_demand,
@@ -65,7 +65,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
                                                  discount_rate=discount_rate)
 
     return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
-        battery_life, pv, diesel, npc
+        battery_life, pv, diesel, npc, fuel_usage
 
 @numba.njit
 def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
@@ -296,46 +296,51 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
         if year > 0:
             sum_el_gen += annual_demand / ((1 + discount_rate) ** year)
 
-    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc
+    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc, fuel_usage
 
 
 @numba.njit
-def calc_load_curve(tier, annual_demand):
+def calc_load_curve(bba, bbb, bbc, bbpme, bbprod):
     # the values below define the load curve for the five tiers. The values reflect the share of the daily demand
     # expected in each hour of the day (sum of all values for one tier = 1)
-    tier5_load_curve = [0.021008403, 0.021008403, 0.021008403, 0.021008403, 0.027310924, 0.037815126,
-                        0.042016807, 0.042016807, 0.042016807, 0.042016807, 0.042016807, 0.042016807,
-                        0.042016807, 0.042016807, 0.042016807, 0.042016807, 0.046218487, 0.050420168,
-                        0.067226891, 0.084033613, 0.073529412, 0.052521008, 0.033613445, 0.023109244]
-    tier4_load_curve = [0.017167382, 0.017167382, 0.017167382, 0.017167382, 0.025751073, 0.038626609,
-                        0.042918455, 0.042918455, 0.042918455, 0.042918455, 0.042918455, 0.042918455,
-                        0.042918455, 0.042918455, 0.042918455, 0.042918455, 0.0472103, 0.051502146,
-                        0.068669528, 0.08583691, 0.075107296, 0.053648069, 0.034334764, 0.021459227]
-    tier3_load_curve = [0.013297872, 0.013297872, 0.013297872, 0.013297872, 0.019060284, 0.034574468,
-                        0.044326241, 0.044326241, 0.044326241, 0.044326241, 0.044326241, 0.044326241,
-                        0.044326241, 0.044326241, 0.044326241, 0.044326241, 0.048758865, 0.053191489,
-                        0.070921986, 0.088652482, 0.077570922, 0.055407801, 0.035460993, 0.019946809]
-    tier2_load_curve = [0.010224949, 0.010224949, 0.010224949, 0.010224949, 0.019427403, 0.034764826,
-                        0.040899796, 0.040899796, 0.040899796, 0.040899796, 0.040899796, 0.040899796,
-                        0.040899796, 0.040899796, 0.040899796, 0.040899796, 0.04601227, 0.056237219,
-                        0.081799591, 0.102249489, 0.089468303, 0.06390593, 0.038343558, 0.017893661]
-    tier1_load_curve = [0, 0, 0, 0, 0.012578616, 0.031446541, 0.037735849, 0.037735849, 0.037735849,
-                        0.037735849, 0.037735849, 0.037735849, 0.037735849, 0.037735849, 0.037735849,
-                        0.037735849, 0.044025157, 0.062893082, 0.100628931, 0.125786164, 0.110062893,
-                        0.078616352, 0.044025157, 0.012578616]
-
-    if tier == 1:
-        load_curve = tier1_load_curve * 365
-    elif tier == 2:
-        load_curve = tier2_load_curve * 365
-    elif tier == 3:
-        load_curve = tier3_load_curve * 365
-    elif tier == 4:
-        load_curve = tier4_load_curve * 365
-    else:
-        load_curve = tier5_load_curve * 365
-
-    return np.array(load_curve) * annual_demand / 365
+    ba_load_curve = [0.988074348, 0.83234137, 0.780348447, 0.895071886, 1.29452897, 1.427317285,
+                     1.427143895, 2.036533853, 2.788021073, 3.132621618, 3.398067297, 3.597146625,
+                     3.749088177, 3.619622164, 3.645379008, 3.798564636, 4.140905488, 6.288317305,
+                     9.012611343, 8.343100334, 6.300316324, 3.931731497, 2.193525721, 1.379620337]
+    
+    bb_load_curve = [3.184482155, 2.873016199, 2.769030352, 2.99847723, 3.797391399, 4.062968029, 
+                     4.062621248, 5.281401164, 6.784375605, 7.473576694, 8.004468052, 8.402626707, 
+                     8.706509811, 8.447577786, 8.499091475, 8.805462731, 9.490144434, 13.78496807, 
+                     19.23355614, 17.89453413, 13.80896611, 9.071796452, 5.5953849, 3.967574132]
+    
+    bc_load_curve = [8.923873354, 8.047396638, 7.614331638, 7.763438133, 9.507818801, 12.4321089,
+                     13.48321774, 14.41446325, 15.87567906, 16.28469545, 17.16546017, 17.7633564,
+                     18.49249621, 19.22393746, 19.1473699, 18.37923754, 17.41429094, 23.6968058, 
+                     40.54912477, 48.55186439, 44.0975794, 32.05947574, 19.32369079, 11.78828855]
+    
+    bpme_load_curve = [0.250823098, 0.250823098, 0.250823098, 0.250823098, 0.250823098, 0.250823098,
+                       7.645880133, 18.30034088, 30.36078872, 42.83318642, 49.9405017, 52.93860082,
+                       49.93452555, 44.38491667, 35.85872985, 27.40653484, 20.76932651, 32.56118326,
+                       62.28781859, 74.50081552, 62.8359663, 36.32711164, 17.17269706, 4.690252421]
+    
+    bprod_load_curve = [12.51341557,  12.49088602, 12.47672647, 16.65231446, 21.62811274, 73.12221043, 
+                        307.3487742, 619.3246364, 907.5906364, 919.5741762, 1038.177627, 1124.612654,
+                        1022.608964, 896.7845886, 959.4059058, 857.2820323, 729.2917592, 482.4635076,
+                        108.3151878, 50.78451089, 60.39546483, 26.100591, 13.54589784, 12.509420]
+    
+    ba_load_curve = [i * bba for i in ba_load_curve]
+    bb_load_curve = [i * bbb for i in bb_load_curve]
+    bc_load_curve = [i * bbc for i in bc_load_curve]
+    bpme_load_curve = [i * bbpme for i in bpme_load_curve]
+    bprod_load_curve = [i * bbprod for i in bprod_load_curve]
+    
+    load_curve = [sum(x) for x in zip(ba_load_curve, bb_load_curve, bc_load_curve, bpme_load_curve, bprod_load_curve )] * 365
+    load_curve = [i / 1000 for i in load_curve]
+    
+    return np.array(load_curve) 
+    
+#load_curve = load_curves(bba, bbb, bbc, bbpme, bbprod)
+#energy_per_hh = (sum(load_curves(bba, bbb, bbc, bbpme, bbprod)))
 
 
 def get_pv_data(latitude, longitude, token, output_folder):
@@ -390,6 +395,7 @@ def get_pv_data(latitude, longitude, token, output_folder):
         df_out['time'] = data['local_time']
 
         df_out.to_csv(out_path, index=False)
+        
     else:
         print('No token provided')
 
@@ -407,3 +413,55 @@ def read_environmental_data(path, skiprows=24, skipcols=1):
         return ghi_curve, temp
     except:
         print('Could not read data, try changing which columns and rows ro read')
+
+def calculate_distribution_lcoe(end_year, start_year, annual_demand,
+                                distribution_cost, om_costs, distribution_life,
+                                discount_rate):
+    # Calculate project lifetime
+    project_life = end_year - start_year
+    
+    # Create an array of annual demand (generation)
+    generation = np.ones(project_life) * annual_demand
+    generation[0] = 0  # Assume no generation in the first year
+    
+    # Initialize cost variables
+    sum_el_gen = 0
+    investment = 0
+    sum_costs = 0
+    total_om_cost = 0
+    npc = 0
+
+    # Iterate over each year in the project life
+    for year in prange(project_life + 1):
+        salvage = 0
+        distribution_investment = 0
+
+        # Accumulate total O&M costs discounted
+        total_om_cost += om_costs / (1 + discount_rate) ** year
+        
+        # Reinvestment in distribution grid based on its lifetime
+        if year % distribution_life == 0:
+            distribution_investment = distribution_cost
+        
+        # Calculate salvage value in the final year
+        if year == project_life:
+            salvage = (1 - (project_life % distribution_life) / distribution_life) * distribution_cost
+        
+        # Accumulate investment, accounting for salvage in the final year
+        investment += distribution_investment - salvage
+
+        # Accumulate total costs discounted
+        sum_costs += (om_costs + distribution_investment - salvage) / ((1 + discount_rate) ** year)
+
+        # Accumulate net present cost (NPC)
+        npc += (om_costs + distribution_investment) / ((1 + discount_rate) ** year)
+        
+        # Accumulate total electricity generation discounted
+        if year > 0:
+            sum_el_gen += annual_demand / ((1 + discount_rate) ** year)
+
+    # Calculate LCOE
+    lcoe = sum_costs / sum_el_gen
+    
+    return lcoe, investment, total_om_cost, npc, sum_el_gen
+
