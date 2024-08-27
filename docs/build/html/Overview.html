@@ -1,0 +1,255 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Overview &mdash; OnSSET for Mini Grids 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Irrigation module" href="Irrigation%20module.html" />
+    <link rel="prev" title="Welcome to agrodem user’s guide!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> OnSSET for Mini Grids
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-info">General info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#recommended-navigation-flow">Recommended navigation flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Irrigation%20module.html">Irrigation module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Downscaling%20module.html">Downscaling module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Future%20Scenarios%20module.html">Future Scenarios module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Post-harvesting%20module.html">Post-harvesting (&amp; post-analysis) module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Credit%20and%20Contact.html">Credit and Contact</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OnSSET for Mini Grids</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Overview</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/Overview.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h1>
+<p>This document serves as a data/process descriptor for the code available at the <a class="reference external" href="https://github.com/akorkovelos/agrodem">project github repo</a>. Note that what is included here is far from exhaustive. The aim, instead, it to highlight the main methodological steps as well as to provide a better understanding of the open source code developed to support the modelling exercise.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Detailed documentation supporting this project is available <a class="reference external" href="Addlinkherewhenready">here</a>.</p>
+</div>
+<div class="section" id="general-info">
+<h2>General info<a class="headerlink" href="#general-info" title="Permalink to this heading">¶</a></h2>
+<p>The methodological approach of this exercise is visually presented below.</p>
+<div class="figure align-center" id="id1">
+<img alt="_images/overview_diagram.JPG" src="_images/overview_diagram.JPG" />
+<p class="caption"><span class="caption-text">Methodological flow and key modelling elements of this exercise</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>The core part of the methodology is the <strong>irrigation model</strong>, which was developed to provide an estimate of crops’ water and electricity requirements in a designated area of interest (AoI). The ‘agrodem’ model has been constructed as such to allow for its full customization by the user based on available data, information and other modelling constraints.</p>
+<p><strong>Downscaling</strong> methods have been explored in ordert to overcome data limitations or low resolution crop allocation data. The supporting metholology can help users build up input data in higher resolution using existing tabular data from surveys or statistics.</p>
+<p>To evaluate <strong>future scenarios</strong>, relevant code was developed in order to enable users explore hypothetical alternative scenarios of cropland expansion (“extensification”). This component enables the user to evaluate the impact of expected changes to crops, as well the impact that policy can have on the expansion of crops to new areas over time. Users can interact with the code and create alternative future scenarios that best suit the purpose of the modelling exercise.</p>
+<p>Finally, the model has been augmented to allow for assessment of electricity requirements for <strong>post-harvest activities</strong> (milling, drying, pressing, cold storage etc.). The model was developed as such to allow calibration of input data depending on the type of crop and AoI.</p>
+<p>The components described above, create important blocks of work. Each block describes a particular activity and is usually characterized by three elements, namely <strong>input</strong> – <strong>process</strong> – <strong>output</strong>. It also comes with open source code (available in the form of <a class="reference external" href="https://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/what_is_jupyter.html">jupyter notebooks</a>) that provides a clear step-by-step description of how to run embeded processes. Sources are linked where needed (e.g. equations, specific values, assumptions etc.) for transparency and open review.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is a spatial analysis, therefore some processes require either the installation of spatial libraries in python or the use of a GIS (check <a class="reference external" href="https://qgis.org/en/site/">QGIS</a>) environment. It is recommended that the user uses Python &gt;= 3.5 through <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda</a> distribution; all required python packages are included in the <a class="reference external" href="https://github.com/akorkovelos/agrodem/blob/master/full_project_environment.yml">full_project_environment</a> file. QGIS plugins developed and used in this exercise come with separate documentation on installation requirements.</p>
+</div>
+</div>
+<div class="section" id="recommended-navigation-flow">
+<h2>Recommended navigation flow<a class="headerlink" href="#recommended-navigation-flow" title="Permalink to this heading">¶</a></h2>
+<p>The core of this methodology is the <strong>Irrigation model</strong>. Therefore, it is recommended that a new user starts by opening and navigating through the respective jupyter notebook. It is structured in such way so as to provide a clear step-by-step overview of the modelling process. Sample input/outout files (described above) can be used to test and experiment with the model.</p>
+<p>Once the user develops a better understanding of the model, can shift her attention to input data and processes related to generating new or customized input for the model. Relevant code has been developed - and made available – on github. Note however that although code is self-explanatory and replicable to the extent possible, this part is relatively time consuming, resource intensive and might require debugging in both python and QGIS.</p>
+<p>A branch of data preparation is related to <strong>“Downscaling”</strong>. That is, creating high resolution input data for the irrigation model based on coarse data sources. This part is optional; the irrigation model can run with coarse, curently openly available data. However, downscaling can be quite useful in cases where data is scarce. This covers big part of areas this analysis targets at, for example areas in Sub-Saharan Africa.</p>
+<p>Note that cross-validation of the downscaling process with actual data might be necessary. Code has been developed; yet it is context specific. That is, it needs to be customized to the user’s individual validation data and processes.</p>
+<p>Finally, once comfortable with the above, the user might want to explore alternative scenarios. This might include changing the model’s input parameters and/or assumptions or create alternative <strong>Future Scenarios</strong>. Supporting code allows for scenario development that can be flexibly designed depending on purpose covering physical suitability (e.g. extensification), economic feasibility (e.g. intensification, productivity gains), environmental governance (e.g. protected areas) or climate resilience (e.g. heat or flood resilience); among others.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Irrigation%20module.html" class="btn btn-neutral float-right" title="Irrigation module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to agrodem user’s guide!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2024, Alexandros Korkovelos, Andreas Sahlberg, Julian Cantor
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
