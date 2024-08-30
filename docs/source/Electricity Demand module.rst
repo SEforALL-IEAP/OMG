@@ -1,75 +1,37 @@
 ﻿Electricity Demand module
 ====================================================
 
-Overview
-****************
+Load characterization
+**********************
 
-In this exercise spatial modelling of post-harvest processes was limited to on-farm primary post-harvest processing. This is because these are most likely to take place in areas without access to the grid. A review of available literature and survey data indicated the following findings:
+For each settlement, the user can specify the connectivity rate, which indicates the max number of potential connections. The default value is set at 70% based on empirical observations of the team members on the ground, but the user can set this value as needed.
 
-* Electricity requirements for post-harvesting activities can be classified into two groups; post harvest and **primary** processing (drying, milling, chilling etc.) and **secondary** processing (packaging, bottling etc.). Note that primary processing is more akin to happen close to farms (in rural areas) than secondary processing.
+Load characterization is an important component of mini grid sizing. In the OMG model we assumed five customer types namely: 
 
-* **Heating and drying** is commonly applied to harvested crops to reduce the moisture content and increase shelf life (e.g. grains, fruits and pulses). The electricity demand is approximately 6 kWh per metric tonne of processed crop.
+* **Residential Bundle A** -> Low consumption residential customers
+* **Residential Bundle B** -> Average consumption residential customers
+* **Residential Bundle C** -> High consumption residential customers
+* **SME Bundle** -> Consumption related to Small and Medium Enterprises
+* **PUoE Bundle** -> Consumption related Productive Use of Electricity (agriculture, social, public etc.)
 
-* **Milling** is another common value chain component across most agricultural products, used to produce flour. Small mills (electric or diesel motors) have a power demand of ~33 kW per tonne of crop milled. Larger (commercial) mills may consume ~15-26 kW per ton ne milled.
+There are two options available in the OMG model currently:
 
-* **Pressing** is the process of oil extraction, typically applied to soybean, sunflower, sesame, palm oil and ground nuts. Power demand ranges between 10-23kW per tonne of crop pressed.
+**Option 1:** Estimate based on building type and archetypes
 
-* **Cold storage** is amongst the most electricity intensive processes in the agriculture value chain, especially in warm climate countries. Electricity requirements depend a lot on size of cooling facility and target temperature. Small evaporation cooling storage room (20 m2) may require ~0.9 kWh/tonne, while refrigerated cold room (80 m2) ~30-50 kWh/tonne.
+In this option the total load is estimated using an estimate of customers per bundle (using the building footprints) and predefined load archatypes. The distribution of buildings into the different bundles can be determined by the user. Here the default values derive from empirical observations in 25 sites in Zambia. That is, 47% of structure were classified as Res. Bundle A, 35% as Res. Bundle B, 8% as Res. Bundle C, 8% under the SME Bundle and ~2% under the PUE bundle. The user can modify these values as/if required.
 
-* **Packaging** takes place when preparing harvests for transport between the fields and storage facilities, and from storage facilities to retail facilities. In the context of Sub-Saharan Africa, this is mostly done by hand, without significant electricity requirements.
+The aggregation of customers per bundle and load profiles leads to a mixed load profile, which is then multiplied by 365 to create a yearly load profile, which is - in turn - used in the mini-grid optimization module.
+
+.. figure::  images/demandprofiles.png
+   :align:   center
+
+   Indicative load profile archetypes for common type of mini-grid customers
 
 .. note::
-   Note that some agricultural products (cassava, meat processing, dairy products, sugarcane etc.) have specific post-harvest processing requirements, thus additional electricity needs. A more elaborate description of those is available in the `project report <https://tbd>`_.
+   A more elaborate description of the load archetypes is available in the `sample load archetypes <https://github.com/SEforALL-IEAP/OMG/blob/main/Input_data/sample_load_archetypes.xlsx>`_ file under the Input data directory on GitHub. 
 
-Parameterization & model run
-******************************
+**Option 2:** Detailed annual hourly load profile from surveys
 
-Modelling electricity demand from post-harvest activities in this project consisted of the following steps:
+In case the user prefers to provide the hourly profiles for the entire year (8760 time slices) for the five types of users, there is an option to do so via the `demand_per_connection_type <https://github.com/SEforALL-IEAP/OMG/blob/main/Input_data/demand_per_connection_type.csv>`_ file. The unit is in Watts (W).
 
-* **Step 1:** Identifying the post-harvest technologies in use in the specific country. The type of technology used depends on country specific practices and technological resources. The specific technologies should be identified as the electricity demand profile varies according to technology. 
-
-* **Step 2:** Estimating the volume (in terms of tonnes) of agricultural products being generated in the area of interest By identifying the types of crops being produces, this will narrow down the potential post-harvesting processes and their corresponding electricity demand.
-
-* **Step 3:** Applying the technology usage profile to the crop production profile. The final step brings together insight gathered from steps two and three to generate a country specific profile of electricity demand from post-harvest processes. Note that estimating the proportion (in terms of tonnes) of each crop that is processed as supposed to sold directly after harvest is also possible. This proportion can vary by crop and country, depending on the extent to which products are processed or stored in farm.
-
-.. figure::  images/Post_Fig1.jpg
-   :align:   center
-
-   Methodological flow of modelling post-harvesting activities
-
-In this exercise, inputs in the modelling of post harvesting activities involved electricity requirements for the different activities identified as shown below.   
-
-.. figure::  images/Post_Fig2.jpg
-   :align:   center
-
-   Common post-harvesting activities for the main crops in Mozambique
-
-.. note::
-	Modelling post-harvesting activities is implemented through Python script `Result post analysis <https://github.com/akorkovelos/agrodem/blob/master/agrodem_postprocessing/Post_harvesting/Result_post_analysis.ipynb>`_ that was developed as part of an overal post analysis of irrigation model results. 
-
-Output data
-****************
-
-The output indicates electricity requirements for post-harvesting activities of the selected crop and AoI. Results are available at the resolution of crop data but can also be aggregated by administrative area as shown below.
-
-.. figure::  images/Post_Fig3.jpg
-   :align:   center
-
-   Common post-harvesting activities for the main crops in Mozambique
-
-
-Special notes
-****************
-
-Introducing electricity to post-harvesting activities can increase efficiency and productivity. We have developed an approach, in which electricity requirements for such activities can be spatially identified and quantified. 
-
-However,
-
-* At this stage, production is estimated based on two yield ratios (current and max potential) that do not vary per location. This could be implemented in our modelling approach, if such data become available in the future.
-
-* Many parameters in the modelling exercise require expert judgement to set. That may include, technologies used, common practices, policies etc. That is, model input parameters should be decided with caution and under the consultation of local agriculture/energy experts.
-
-* It is very difficult to decide in which areas post-harvesting activities will take place. Thus, this exercise can only be used for a quick, screening analysis of estimated power requirements for such activities that combined with irrigation requirement can help delineate the spatial condors of electrification for agro-productive uses.
-
-
-
+Finally, in case the use wants to add additional types of customers, that is possible, however the OMG algorithm related to demand (calc_load_curve functions) needs to be updated accordingly. 
