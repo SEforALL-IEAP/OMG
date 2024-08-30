@@ -9,7 +9,7 @@ Mini-grids have emerged as a crucial solution, especially in areas where traditi
 
 Here we introduce **"OnSSET for Mini-Grids (OMG),"** an open-source Python-based tool that builds upon previous open-source electrification modelling framework efforts for techno-economic optimization, namely the Open Source Spatial Electrification Tool (OnSSET). The real added value of OMG lies in its automated methods to generate distribution network components for multiple sites simultaneously. Leveraging spatial analytics, the tool offers insights into optimal configurations of hybrid solar-diesel-storage systems and provides detailed bill-of-quantities for distribution design. OnSSET-MG offers full customizability of parameters and is designed to adjust to data availability per site. It can be integrated into a national least cost modelling framework or serve as a stand-alone tool for site-specific mini-grid analysis. 
 
-.. figure::  images/omg_sample_results.JPG
+.. figure::  images/omg_sample_results.jpg
    :align:   center
 
    Example of mini-grid distribution design and key components BoQ. Generation and distribution components required to connect and supply all buildings were automatically generated in a matter of seconds, taking into account the road network layout and local energy resource availability
@@ -27,10 +27,11 @@ Contents
    :maxdepth: 3
 
    Overview
+   Environmental resources module
+   Electricity Demand module
    Mini-Grid optimization module
    Network layout generator module
-   Electricity Demand module
-   Environmental resources module
+   Results
    Credit and Contact
 
 

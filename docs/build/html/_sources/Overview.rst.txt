@@ -11,7 +11,7 @@ General info
 
 The methodological approach of this exercise is visually presented below.
 
-.. figure::  images/omg_diagram.JPG
+.. figure::  images/omg_diagram.jpg
    :align:   center
 
    Methodological flow and key modelling elements
