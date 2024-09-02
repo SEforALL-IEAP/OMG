@@ -1,307 +1,158 @@
-
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Environmental resources module &mdash; OnSSET for Mini Grids 0.0.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-
-  
-  
-  
-  
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Credit and Contact" href="Credit%20and%20Contact.html" />
-    <link rel="prev" title="Electricity Demand module" href="Electricity%20Demand%20module.html" /> 
+    <link rel="next" title="Electricity Demand module" href="Electricity%20Demand%20module.html" />
+    <link rel="prev" title="Overview" href="Overview.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> OnSSET for Mini Grids
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            OnSSET for Mini Grids
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Mini-Grid%20optimization%20module.html">Mini-Grid optimization module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Network%20layout%20generator%20module.html">Network layout generator module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Electricity%20Demand%20module.html">Electricity Demand module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Environmental resources module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#input-data-preparation">Input data preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#model-run">Model run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#output-data">Output data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#special-notes">Special notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#solar-resource">Solar resource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#flexibility">Flexibility</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="Electricity%20Demand%20module.html">Electricity Demand module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Mini-Grid%20optimization%20module.html">Mini-Grid optimization module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Network%20layout%20generator%20module.html">Network layout generator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Results.html">Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Credit%20and%20Contact.html">Credit and Contact</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">OnSSET for Mini Grids</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>Environmental resources module</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Environmental resources module</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/Environmental resources module.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="environmental-resources-module">
-<h1>Environmental resources module<a class="headerlink" href="#environmental-resources-module" title="Permalink to this heading">¶</a></h1>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
-<p>Electricity requirements for irrigation in the future will depend on intensification and/or expansion of selected crops over the area of interest. Here follows in brief a methodology (and supporting scripts) that may be used to answer two key questions:</p>
+             
+  <section id="environmental-resources-module">
+<h1>Environmental resources module<a class="headerlink" href="#environmental-resources-module" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>According to the latest report launched by SEForALL <a class="reference external" href="https://www.seforall.org/system/files/2024-08/SOTM%20Report%202024_EN_vFc.pdf">State of the Global MINI GRIDS MARKET REPORT 2024</a> between 2010 and 2021, the population lacking access to electricity was reduced by 466 million, decreasing from 1.14 billion to 675 million. A combination of factors, including advancements in renewable energy technologies, increased investment in electrification projects, and international cooperation, has made this possible. Solar energy has emerged as a key driver of electrification in remote and rural areas, due to its scalability and the declining cost of the technology.</p>
+<p>Mini-grids and standalone solar systems have become the go-to electrification approaches for delivering electricity to communities where extending the traditional grid is not economically feasible. In this regard, modeling solar resource as an electrification option for remote areas is a key step in sizing installed capacities and capital costs.</p>
+<p>The following methodology has been developed in order to model the expected energy output from a minigrid with solar panels, batteries and diesel generator.</p>
+</section>
+<section id="solar-resource">
+<h2>Solar resource<a class="headerlink" href="#solar-resource" title="Link to this heading"></a></h2>
+<p>The pv_generation function (see <a class="reference external" href="https://github.com/SEforALL-IEAP/OMG/blob/main/hybrids.py">hybrids</a>) calculates the amount of electricity generated by a photovoltaic (PV) system:</p>
+<div class="math notranslate nohighlight">
+\[pv_{generation} = pv_{capacity} \times eff \times \frac{GHI}{1000} \times (1 - k_t \times (t_{cell} - 25))\]</div>
+<p>where:</p>
 <ul class="simple">
-<li><p>What is the physical suitability of land in terms of crop “extensification”?</p></li>
-<li><p>How much of the potential expansion is economically feasible?</p></li>
+<li><p>pv_capacity is the installed capacity in kW of the minigrid.</p></li>
+<li><p>eff is an efficiency factor set at 0.9.</p></li>
+<li><p>k_t is a dimensionless factor kept constant at 0.005.</p></li>
+<li><p>t_cell is the cell temperature modeled through the following equation:</p></li>
 </ul>
-<p>We have developed a spatially explicit approach that provides flexibility to create scenarios of future crop expansion covering both physical and economic suitability over an area of interest. Our approach builds upon a study by <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0306919214000761">Chamberlin</a>. The basic steps are presented in the Figure below.</p>
-<div class="figure align-center" id="id1">
-<img alt="_images/FutScen_Fig1.jpg" src="_images/FutScen_Fig1.jpg" />
-<p class="caption"><span class="caption-text">Methodological approach for generating future scenarios of crop expansion</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
-<p><strong>Step 1.</strong> Involves the definition of physical suitability for expansion. That is, a layer that indicates areas where crop can be expanded in the future vs areas that are restricted from crop expansion based in bio-physical factors.</p>
-<p><strong>Step 2.</strong> Involves the economic feasibility of expansion. That is, a layer that indicates hot spots for crop expansion based on high expected net revenue estimates.</p>
-<p><strong>Step 3.</strong> Involves the combination of physical and economic feasibility layers into a proxy layer for future crop expansion that reflects indicative actions related to productivity gains, environmental resilience or both.</p>
-</div>
-<div class="section" id="input-data-preparation">
-<h2>Input data preparation<a class="headerlink" href="#input-data-preparation" title="Permalink to this heading">¶</a></h2>
-<p>The preparation of <strong>physical suitability</strong> (step 1) relies on the collection and processing of the following layers.</p>
+<div class="math notranslate nohighlight">
+\[t_{cell} = temp + 0.0256 \times GHI\]</div>
+<p>Global Horizontal Irradiance (GHI) and temperature (temp) are retrieved from Renewable Ninja, a collaboration that fosters the integration of renewable energy technologies into modern energy systems. It allows users to retrieve information for solar and wind resources for specific locations.</p>
+<p>OnSSET-MG uses an API to access Renewable Ninja services to download GHI and temperature data. To create an account and obtain an API token, follow these steps:</p>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="http://2016africalandcover20m.esrin.esa.int/">ESA land cover map</a></p></li>
-<li><p><a class="reference external" href="https://www.iucn.org/theme/protected-areas/our-work/world-database-protected-areas">IUCN protected areas</a></p></li>
-<li><p><a class="reference external" href="https://data.jrc.ec.europa.eu/collection/id-0054">EU flood maps</a></p></li>
-<li><p><a class="reference external" href="https://www.worldpop.org/focus_areas">WorldPop population distribution</a></p></li>
-<li><p>Total new harvested area for the modelled crop at the end year (e.g. 2040)</p></li>
+<li><p>Create a free account on the Renewables.ninja <a class="reference external" href="https://www.renewables.ninja/register">website</a>. Once registered, you will be able to download datasets and utilize the API for programmatic data retrieval.</p></li>
+<li><p>Log in to access your personal API token: Navigate to your profile by clicking on the symbol in the top right corner (usually a profile picture or icon) on the <a class="reference external" href="https://www.renewables.ninja/profile">profile page</a>.</p></li>
+<li><p>Within the profile settings, you can find your unique API token.</p></li>
 </ol>
-<div class="figure align-center" id="id2">
-<img alt="_images/FutScen_Fig2.jpg" src="_images/FutScen_Fig2.jpg" />
-<p class="caption"><span class="caption-text">Preparing physical suitability map for future crop expansion</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
-<p>Data sets shall be collected and resampled at the same target spatial resolution (e.g. 500m) and projection system. Then, they shall be re-classified into binary (0-1) suitability layers. In general, for the population layer, cells with more than a threshold population (urban areas) shall be excluded from potential future expansion. For the land cover layer, built up areas, permanent snow and/or ice, open water, bare areas and no data shall be excluded. Similarly, protected areas and regularly flooded areas shall also be restricted from future expansion.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The classification and/or definition of extraction zones may be differentiated based on projects mandates (e.g. environmental policy, agriculture sector plans etc.).</p>
-</div>
-<hr class="docutils" />
-<p>The preparation of <strong>economic feasibility</strong> (step 2) relies on the collection and processing of the following layers and parameters.</p>
-<ol class="arabic simple" start="6">
-<li><p>Raster layer indicating the location of markets  (binary 0 – 1)</p></li>
-<li><p>Raster layers indicating attainable yield for modelled crop (<a class="reference external" href="http://www.fao.org/nr/gaez/about-data-portal/actual-yields-and-production/en/">GAEZ</a>)</p></li>
-<li><p>Factor of attainable yield (numerical value provided by user)</p></li>
-<li><p>Raster layer indicating output prices per ha of modelled crop</p></li>
-<li><p>Raster layer indicating production cost per ha of modelled crop</p></li>
-<li><p>Crop prices shock (numerical value provided by user)</p></li>
-<li><p>Alpha and gamma controls for distance decay equation</p></li>
-</ol>
-<p>Following the approach of Chamberlin et al, the suggested approach used an explicit economic framework to estimate returns to agricultural production in each grid cell, based on land productivity, market access and market prices. Cells that can be profitably cultivated are considered as suitable for cropland expansion. The economic profitability is evaluated at each grid cell location in terms of gross margins. In practice, this means calculating the difference between potential revenue and production costs, on a per hectare basis.</p>
-<div class="figure align-center">
-<img alt="_images/FutScen_Fig3.jpg" src="_images/FutScen_Fig3.jpg" />
-</div>
-<p>Potential revenue at each grid cell may be derived by multiplying potential yield estimates with farm gate prices. Prices can either be assumed constant across space or made spatially explicit. The latter can be modelled using the <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S0960077915001587">distance decay</a>  function.</p>
-<div class="figure align-center" id="id3">
-<img alt="_images/FutScen_Fig4.jpg" src="_images/FutScen_Fig4.jpg" />
-<p class="caption"><span class="caption-text">Methodological diagram for identifying potential future cropland based on physical suitability and economic feasibility</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
-<p>Finally, combination of physical and economic suitability layers was used to create a proxy layer for future crop expansion that reflects indicative actions related to productivity gains, environmental resilience or both. This approach allows for various future scenarios around market prices, production costs and agricultural productivity to be explored.</p>
-</div>
-<div class="section" id="model-run">
-<h2>Model run<a class="headerlink" href="#model-run" title="Permalink to this heading">¶</a></h2>
-<p>The methods presented above can be implemented through code available as <a class="reference external" href="https://github.com/akorkovelos/agrodem/blob/master/agrodem_preprocessing/Future_Scenarios/Making%20Future%20Scenarios.ipynb">Making Future Scenarios</a> in the project’s repository.</p>
-</div>
-<div class="section" id="output-data">
-<h2>Output data<a class="headerlink" href="#output-data" title="Permalink to this heading">¶</a></h2>
-<p>The output of the model indicates potential locations of crop extensification in the future. Results are available in raster (.tiff) and can vary based on crop modelled, productivity gain assumptions and environmental resilience as described above. The Figure below shows extensification for maize in Mozambique under four example scenarios namely Sustainable Growth (SG), Environmental Stewardship (ES), Economic Growth (EG) abd Business As Usual (BAU).</p>
-<div class="figure align-center" id="id4">
-<img alt="_images/FutScen_Fig5.jpg" src="_images/FutScen_Fig5.jpg" />
-<p class="caption"><span class="caption-text">Potential areas for maize extensification in Mozambique, under the SG, ES, EG and BAU scenarios respectively (from left to the right)</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-center" id="id5">
-<img alt="_images/FutScen_Fig6.jpg" src="_images/FutScen_Fig6.jpg" />
-<p class="caption"><span class="caption-text">Potential areas for maize extensification in Mozambique, under the SG, ES, EG and BAU scenarios respectively (from left to the right)</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
-</div>
-<p>Results indicating future distribution of crops can be combined with datasets indicating existing crop allocation. The latter can then be prepared and used in the agrodem model in order to estimate water and electricity requirements for the modelled crop in the future.</p>
-</div>
-<div class="section" id="special-notes">
-<h2>Special notes<a class="headerlink" href="#special-notes" title="Permalink to this heading">¶</a></h2>
-<p>This document presented a pipeline for generating future scenarios in regards to “extensification”. That is, identifying locations for new crop areas based on policy mandates.The supporting code can be used to generate several variations of the above.</p>
-<p><strong>Note</strong> however that the methodology presented above is bound to certain limitations. For example, we assume 100 ha (full grid coverage for 1km cells) of harvested area in new locations. Also, these may overlap between different crops as we only model one crop at a time. Future work might want to further explore those assumptions.</p>
-</div>
-</div>
+<p>The solar data can be access through the function  get_pv_data included in OnSSET-MG. It is important to note that using the API has restrictions on the number of requests per second (1 per second) and per hour (50).</p>
+</section>
+<section id="flexibility">
+<h2>Flexibility<a class="headerlink" href="#flexibility" title="Link to this heading"></a></h2>
+<p>Solar energy is only available when the sun is shining. Therefore, a backup option is needed to keep the supply running during times of low irradiance.</p>
+<p>OnSSET-MG includes diesel generator and batteries. From a technical perspective, both resources are modeled in terms of their technical characteristics and cost. Diesel includes price per liter, initial investment cost, annual operational/maintenance cost per kilowatt of installed capacity, expected lifetime and limit on maximum allowable contribution. While, battery parameters include initial capital cost of the battery storage system and its inverter, expected lifetime, number of charge/discharge cycles, charging and discharging efficiencies and maximum depth of discharge.</p>
+<p>When operating, batteries and diesel generators follow an hourly dispatch strategy (see function hour_simulation in the script <a class="reference external" href="https://github.com/SEforALL-IEAP/OMG/blob/main/hybrids.py">hybrids</a>) to balance the load and optimize energy use. The function calculates the hourly diesel generation, fuel consumption, battery usage, and updates annual totals for these metrics. It also tracks unmet demand and excess generation.</p>
+<p>Batteries are prioritized during the morning and day. The diesel generator, if needed, is run at the lowest possible capacity, limited to 40% of its rated capacity. During the evening, the diesel generator is dispatched primarily. It seeks to meet the load and charge batteries for the night if possible. Batteries are dispatched if diesel generation is insufficient. However, if batteries cannot provide enough energy, the diesel generator is used at its highest capacity.</p>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="Credit%20and%20Contact.html" class="btn btn-neutral float-right" title="Credit and Contact" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="Electricity%20Demand%20module.html" class="btn btn-neutral float-left" title="Electricity Demand module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Electricity%20Demand%20module.html" class="btn btn-neutral float-right" title="Electricity Demand module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2024, SEforALL-UIEP
-
-    </p>
+    <p>&#169; Copyright 2024, SEforALL-UIEP.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

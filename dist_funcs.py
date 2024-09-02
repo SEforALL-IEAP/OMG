@@ -659,3 +659,173 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
         plt.show()
 
     return all_candidates, intersection_points, poles, angle_radians_w, angle_radians_l
+
+
+def creating_grid(trunk_lines, voronois, community, households_centroids, target_crs, pole_dist=50, buffer=25):
+
+    # This function generates a comprehensive electrical distribution grid for a specified community. 
+    # It iterates over trunk lines within defined areas (Voronoi cells), placing poles, assigning households to 
+    # the nearest poles, and creating servicedrops. The outputs are GeoDataFrames containint geometry for
+    # trunk lines, secondary branches, drop service and poles.
+    
+    # Initialize lists to store results
+    trunk_p = []  # List to store trunk poles
+    assigned_p = []  # List to store assigned poles
+    lv_l = []  # List to store low-voltage lines (secondary lines)
+    service_l = []  # List to store service lines (connections to households)
+    mst_p = []  # List to store minimum spanning tree (MST) poles
+    all_p = []  # List to store all poles
+    long_services = 0  # Counter for service lines longer than 70 units
+    
+    # Initialize lists to store geometries for the entire grid
+    multi_trunks = []
+    multi_trunks_len = []
+    
+    multi_secondary = []
+    multi_secondary_len = []
+    
+    multi_service = []
+    multi_service_len = []
+    
+    multi_poles = []
+    multi_all_poles = []
+    
+    # Iterate over each trunk line segment
+    for id in range(len(trunk_lines)):
+        # Create candidate poles along the trunk line within the Voronoi cell
+        all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l = create_candidate_poles_old(
+            voronois[id], trunk_lines[id], pole_dist, buffer=buffer, plot=False)
+    
+        # Append the newly created trunk poles and all poles to the respective lists
+        trunk_p += trunk_poles
+        all_p += all_poles
+            
+        # Clip household centroids to the current Voronoi cell
+        polygon_households = households_centroids.clip(voronois[id])
+    
+        # Convert MultiPoint geometries to Point if necessary
+        polygon_households['geometry'] = polygon_households['geometry'].apply(convert_multipoint_to_point)
+    
+        # Assign households to the nearest poles and calculate service drops
+        assigned_poles, service_drops = assign_households(all_poles, polygon_households)
+    
+        # Append the assigned poles and service drops to their respective lists
+        assigned_p += all_poles
+        service_l += service_drops
+    
+        # Count service lines longer than 70 units
+        for s in service_drops:
+            if s.length > 70:
+                long_services += 1
+    
+        # Weighting factor for the minimum spanning tree (MST)
+        weight = 0.5
+    
+        # Generate low-voltage lines (secondary lines) using MST of poles
+        lv_lines, mst_poles = lv_lines_mst(
+            all_poles, trunk_poles, assigned_poles, angle_radians_w, angle_radians_l, weight, plot=False)
+    
+        # Append the MST poles and low-voltage lines to their respective lists
+        lv_l += lv_lines
+        mst_p += mst_poles
+
+    # Combine all generated poles into a MultiPoint geometry
+    multi_all_poles.append(MultiPoint(all_p))
+
+    # Combine the trunk lines into a MultiLineString geometry and calculate their lengths
+    multi_trunks.append(MultiLineString(trunk_lines))
+    multi_trunks_len.append(MultiLineString(trunk_lines).length)
+    
+    # Combine the secondary lines into a MultiLineString geometry and calculate their lengths
+    multi_secondary.append(MultiLineString(lv_l))
+    multi_secondary_len.append(MultiLineString(lv_l).length)
+    
+    # Combine the service lines into a MultiLineString geometry and calculate their lengths
+    multi_service.append(MultiLineString(service_l))
+    multi_service_len.append(MultiLineString(service_l).length)
+    
+    # Combine the MST poles into a MultiPoint geometry
+    multi_poles.append(MultiPoint(mst_p))
+
+    # Create GeoDataFrame for trunk lines
+    trunks_gdf = gpd.GeoDataFrame()
+    trunks_gdf['Length'] = multi_trunks_len
+    trunks_gdf['Type'] = "Trunk Line"
+    trunks_gdf.geometry = multi_trunks
+    trunks_gdf.set_crs(target_crs, inplace=True)  # Set the coordinate reference system (CRS)
+    trunks_gdf['Community'] = community
+    
+    # Create GeoDataFrame for secondary lines
+    secondary_gdf = gpd.GeoDataFrame()
+    secondary_gdf['Length'] = multi_secondary_len
+    secondary_gdf['Type'] = "Secondary Line"
+    secondary_gdf.geometry = multi_secondary
+    secondary_gdf.set_crs(target_crs, inplace=True)
+    secondary_gdf['Community'] = community
+    
+    # Create GeoDataFrame for service lines
+    service_gdf = gpd.GeoDataFrame()
+    service_gdf['Length'] = multi_service_len
+    service_gdf['Type'] = "Service Line"
+    service_gdf.geometry = multi_service
+    service_gdf.set_crs(target_crs, inplace=True)
+    service_gdf['Community'] = community
+    
+    # Create GeoDataFrame for poles
+    poles_gdf = gpd.GeoDataFrame()
+    poles_gdf.geometry = multi_poles
+    for i, multi_pole in enumerate(multi_poles):
+        num_poles = len(multi_pole.geoms)  # Count the number of poles in each MultiPoint
+    poles_gdf['No. Poles'] = num_poles
+    poles_gdf.set_crs(target_crs, inplace=True)
+    poles_gdf['Community'] = community
+    poles_gdf=poles_gdf.explode(index_parts=False)
+
+    # Combine all line geometries (trunk, secondary, service) into a single GeoDataFrame
+    total_grid_gdf = gpd.GeoDataFrame(pd.concat([trunks_gdf, secondary_gdf, service_gdf], ignore_index=True))
+
+    # Return the combined grid GeoDataFrame, poles GeoDataFrame, and individual line GeoDataFrames
+    return total_grid_gdf, poles_gdf, service_gdf, secondary_gdf, trunks_gdf
+
+def plotting_jpeg(country, name_community, id, No_Households, gpd_mg, service_gdf, secondary_gdf, trunks_gdf, poles, clip_footprints):
+
+    gpd_mg=gpd_mg.to_crs(4326)
+    service_gdf=service_gdf.to_crs(4326)
+    secondary_gdf=secondary_gdf.to_crs(4326)
+    trunks_gdf=trunks_gdf.to_crs(4326)
+    poles=poles.to_crs(4326)
+    #clip_footprints=clip_footprints.to_crs(4326)
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    # Plot each GeoDataFrame with a label
+    gpd_mg.plot(ax=ax, edgecolor='black', alpha=0.2, label='Main Grid')
+    #clip_footprints .plot(ax=ax, edgecolor='red', alpha=0.4, label='Building footprints')
+    service_gdf.plot(ax=ax, edgecolor='black', alpha=0.1, label='Service drops')
+    secondary_gdf.plot(ax=ax, edgecolor='blue', alpha=0.2, label='Secondary lines')
+    trunks_gdf.plot(ax=ax, edgecolor='orange', alpha=0.2, label='Trunk lines')
+    poles.plot(ax=ax, color='green', label='Poles', markersize=1)
+    
+    # Set the aspect ratio
+    #ax.set_aspect('equal', 'box')
+    
+    xmin, ymin, xmax, ymax = gpd_mg.total_bounds
+    
+    ax.set_xlim(xmin-0.001, xmax+0.001)
+    ax.set_ylim(ymin-0.001, ymax+0.001)
+    
+    # Add a title
+    txt = ax.set_title(country +'({})'.format(name_community), size=8)
+    ax.text(0.5, -0.1, "id={} and No. Households ={}".format(id, No_Households), fontsize=10, ha='center', va='bottom', transform=ax.transAxes)
+    #ax.text(0.5, -0.2, "No. Households={}".format(row.NUMPOINTS), fontsize=10, ha='center', va='bottom', transform=ax.transAxes)
+       
+    
+    # Customize tick parameters
+    ax.tick_params(axis='x', labelcolor='black', labelsize=6)
+    ax.tick_params(axis='y', labelcolor='black', labelsize=6)
+    
+    # Add the legend
+    ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+
+
+    return fig
