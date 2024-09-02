@@ -51,10 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Mini-Grid%20optimization%20module.html">Mini-Grid optimization module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Network layout generator module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#input-data-preparation">Input data preparation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#parameterization-model-run">Parameterization &amp; model run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#output-data">Output data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#special-notes">Special notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#grid-sizing">Grid sizing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Results.html">Results</a></li>
@@ -89,142 +86,20 @@
 <h1>Network layout generator module<a class="headerlink" href="#network-layout-generator-module" title="Link to this heading"></a></h1>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
-<p>High resolution crop allocation datasets are not usually available in open access sources. In principle, ‘downscaling models’ use high-resolution input data (e.g. in our case temperature, precipitation, soil pH etc.) which have predictive power over low-resolution input data (e.g. in our case national or admin level aggregate values of harvested area, production etc.).</p>
-<p>In order to do so, we have used the <a class="reference external" href="https://mygeohub.org/resources/flat">Fine Scale Land Allocation Tool or FLAT</a> model.  FLAT is a statistical-based open access tool that combines dependent variable data measured at an aggregate level (e.g., state/provincial or national) with independent variable data measured at the pixel level to produce estimates of the dependent variable at the pixel level.</p>
+<p>A grid network allows different households to connect to the PV Minigrid. Traditionally, in Integrated Energy Planning, the sizing of distribution networks in settlements is done through indirect calculations based on the number of users, the size of clusters, or by using Minimum Spanning Trees (MST).</p>
+<p>All of these approaches are rough approximations that neglect the inherent complexity of the problem. In most cases, when planning, grids follow existing roads, as they can easily bend and branch off to connect more buildings. However, this means the grid does not follow an optimal path but is instead restricted by the topological distribution of households within the settlements. Moreover, road layers might not be available in remote areas where mini-grids are a suitable electrification alternative, leaving a gap in grid sizing that uses roads as an input.</p>
+<p>Given this context, OnSSET-MG includes a methodological approach to size the distribution network for a given settlement using its boundaries and the building footprint layer of the households as the main inputs. The module identifies key attributes of the distribution network: trunk lines, branch lines, service drops, and poles. With associated capital costs, it can also compute investment costs and utilize the LCOE equation to estimate distribution costs per kilowatt.</p>
 </section>
-<section id="input-data-preparation">
-<h2>Input data preparation<a class="headerlink" href="#input-data-preparation" title="Link to this heading"></a></h2>
-<p>In terms of the dependent aggregate values of harvested area, we have used <a class="reference external" href="http://www.fao.org/land-water/land/land-governance/land-resources-planning-toolbox/category/details/en/c/1026341/">FAO Agro MAPS Global Spatial Database of Agricultural Land use Statistics</a>. The database provides agricultural statistics and data collected and compiled from national resources, surveys, and official in-country agencies, assuring some degree of consistency across different agricultural products and geographic areas. This consistency is considered highly important in this exercise as it allows replicability to other regions or agricultural products.</p>
-<p>For the purposes of this exercise, level 2 administrative crop data were used as shown in Figure below.</p>
-<figure class="align-center" id="id1">
-<img alt="_images/Downscaling_Fig.jpg" src="_images/Downscaling_Fig.jpg" />
-<figcaption>
-<p><span class="caption-text">Visualisation of harvested area data of rainfed maize per admin level 2 in Mozambique, as retrieved from FAO Agro-Maps</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
-</figcaption>
+<section id="grid-sizing">
+<h2>Grid sizing<a class="headerlink" href="#grid-sizing" title="Link to this heading"></a></h2>
+<p>Voronoi polygons are computed using generated points along the cluster boundary at a specified spacing. The edges of the Voronoi polygons are then intersected with the polygon boundaries. Segments that do not intersect are used as a base trunk line. This line is further simplified by removing branches shorter than a specified threshold (see figure below).</p>
+<figure class="align-center">
+<img alt="_images/trunk_line.jpeg" src="_images/trunk_line.jpeg" />
 </figure>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In case input data is outdated, they will need to be projected to the base year. For example in this case the total harvested area for maize was equal to only 782,608 ha in 2008 (input data), while 2017-18 FAO estimates indicate about 1,962,000 ha in Mozambique. This can be done through a python script available as <a class="reference external" href="https://github.com/akorkovelos/agrodem/blob/master/agrodem_preprocessing/Downscaling/Downscaling_prepping/Preparing_Agro_Maps.ipynb">Preparing Agro Maps</a>.</p>
-</div>
-<p>Then, the above dataset is transformed into a base (vector) layer at the targeted downscaling resolution (e.g. 1km). This is used later on to extract the predictor attributes per location. The steps for this are as follows:</p>
-<ol class="arabic simple">
-<li><p>Project crop layer to target crs (in this case EPSG: 32737 – WGS 84/UTM zone 37S )</p></li>
-<li><p>Calculate “area” in sq.km and “perimeter” in km for listed admin areas</p></li>
-<li><p>Convert “area” from sq.km to ha</p></li>
-<li><p>Create the base grid mesh (10km, 5km, 1km, 500m or 250m)</p></li>
-<li><p>Only keep locations where harvested area for the listed crop is available.</p></li>
-<li><p>Convert polygons to centroids indicating the location of crops at the selected resolution.</p></li>
-<li><p>Export output as a .csv file</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In order to facilitate the process, we have developed a <a class="reference external" href="https://github.com/akorkovelos/agrodem/tree/master/agrodem_preprocessing/Downscaling/Downscaling_prepping/Creating_base_grid">QGIS plugin</a> that together with instructions for installation and use is available at the project’s repository.</p>
-</div>
-<p>Finally, once base (vector) data layer is ready and available as a .csv file, predictor values are extracted from raster layers. As predictors in the FLAT model, we may use the following variables:</p>
-<ul class="simple">
-<li><p>Average temperature</p></li>
-<li><p>Average solar irradiation</p></li>
-<li><p>Average precipitation</p></li>
-<li><p>Average wind speed</p></li>
-<li><p>Soil Ph in H20</p></li>
-<li><p>Depth to bedrock</p></li>
-<li><p>Bulk density</p></li>
-<li><p>Clay content</p></li>
-<li><p>Texture class</p></li>
-<li><p>Soil organic carbon</p></li>
-<li><p>Drainage class</p></li>
-<li><p>EVI</p></li>
-<li><p>NDVI</p></li>
-<li><p>Elevation - Slope</p></li>
-<li><p>Cropland extent</p></li>
-</ul>
-<p>The extraction process yields a .csv file that serves as input to the FLAT model. An example of this file is available as <a class="reference external" href="https://github.com/akorkovelos/agrodem/tree/master/agrodem_preprocessing/Downscaling/Downscaling_prepping/Output_data/FLAT_input">FLAT_input_Maize_10km</a>.</p>
-<figure class="align-center" id="id2">
-<img alt="_images/Downscaling_Fig2.jpg" src="_images/Downscaling_Fig2.jpg" />
-<figcaption>
-<p><span class="caption-text">Snapshot of the .csv file to be used as input in the FLAT model</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
-</figcaption>
+<p>A grid of candidate poles is generated within the Voronoi regions, and households will connect to the closest candidate pole. Then, a weighted MST connects all of the poles to the primary trunk lines. The weights of the MST are assigned to favor the following, in order: connecting two lines on the primary trunk, connecting poles to a nearby pole on the trunk line, connecting two poles aligned along the x- or y-axis of the minimum bounding rectangle to favor orthogonal lines from the trunk, and connecting any other poles. The final result for the same geometry can be observed in the figure below.</p>
+<figure class="align-center">
+<img alt="_images/Grid_final.jpeg" src="_images/Grid_final.jpeg" />
 </figure>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>All of the above data can be collected either in their raw format or using a Python script (<a class="reference external" href="https://github.com/akorkovelos/agrodem/blob/master/agrodem_preprocessing/Downscaling/Downscaling_prepping/GEE_Imagery_Extraction.ipynb">GEE_Imagery_Extraction</a>) that was developed specifically for the extraction of the Images and ImageCollections using the GEE API.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ol class="arabic simple">
-<li><p>The extraction process can be conducted through code available as <a class="reference external" href="https://github.com/akorkovelos/agrodem/blob/master/agrodem_preprocessing/Downscaling/Downscaling_prepping/FLAT%20prepping.ipynb">FLAT prepping</a> in the project’s repository.</p></li>
-<li><p>With regards to the imported geospatial layers (both raster and vector files), each one should be re-projected into the same coordinate system e.g. EPSG: 32737 – WGS 84/UTM zone 37S (+proj=utm +zone=37 +south +datum=WGS84 +units=m +no_defs) for Mozambique.</p></li>
-</ol>
-</div>
-</section>
-<section id="parameterization-model-run">
-<h2>Parameterization &amp; model run<a class="headerlink" href="#parameterization-model-run" title="Link to this heading"></a></h2>
-<p>The FLAT model can be executed with the following steps.</p>
-<p><strong>Step 1.</strong>     Go to directory:</p>
-<blockquote>
-<div><p>&gt;/ FLAT_model/src</p>
-</div></blockquote>
-<p><strong>Step 2.</strong>     In the directory run:</p>
-<blockquote>
-<div><p>&gt;/ Rscript RforFLAT.R flat_input.csv 0.534 1 15</p>
-<p>where:</p>
-<ul class="simple">
-<li><p>flat_input.csv is the output csv of FLAT prepping process</p></li>
-<li><p>0.534 is the target spatial resolution in arc.min</p></li>
-<li><p>1 is the number of modelled crops</p></li>
-<li><p>15 is the number of independent variables</p></li>
-</ul>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This process requires <a class="reference external" href="https://www.r-project.org/">R</a> to be installed at your working station. Running the above script creates nine derivative .csv files that are needed in Step 3. These include cropnames, pixels, states, data, statelevelcroparea, name, pixelarea, statelevelareainfo and variables.</p>
-</div>
-<p><strong>Step 3.</strong>     Copy the nine .csv files into the resource directory:</p>
-<blockquote>
-<div><p>&gt;/ FLAT_model/src/resource</p>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>FLAT.gms should be located in the same directory as well - default by installation.</p>
-</div>
-<p><strong>Step 4.</strong>     Open GAMS Terminal; move to resource directory and run:</p>
-<blockquote>
-<div><p>&gt;/ gams FLAT.gms</p>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This will run FLAT model. Once complete, the log file (FLAT.ist) will be generated. This can be used to monitor the specifics of the run and track any issue in the debugging process (if needed). The result file is a .dat file usually under the name “finalresults.dat”. Other output files might include “Pixel-level cropland predictions against FAO aggregate values”; “Coefficient estimates”; ”Standard error”; “Covariate matrix for parameter estimation”.</p>
-</div>
-<p><strong>Step 5.</strong>     Export results (Optional)</p>
-<blockquote>
-<div><p>&gt;/ FLAT_model/src</p>
-<p>run &gt; Rscript dattotiff.R maize finalresults.dat (to generate a raster file (.tiff) of the results) or</p>
-<p>run &gt; Result.r (to export results in .csv format)</p>
-</div></blockquote>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Transformation of the result (.dat) file into a .csv file that can later on be used for the irrigation model can also be conducted using the script <a class="reference external" href="https://github.com/akorkovelos/agrodem/blob/master/agrodem_preprocessing/Downscaling/FLAT_model/finalresults.dat">Dat to csv</a>.</p>
-</div>
-</section>
-<section id="output-data">
-<h2>Output data<a class="headerlink" href="#output-data" title="Link to this heading"></a></h2>
-<p>The output file provides a prediction the downscaled crop allocation. Each location (point in the vector layer) is attributed with a fraction of the total harvested area of the admin level it belongs to. Aggregation of the downscaled results per admin layer sum up to the original values.</p>
-<figure class="align-center" id="id3">
-<img alt="_images/Downscaling_Fig3.jpg" src="_images/Downscaling_Fig3.jpg" />
-<figcaption>
-<p><span class="caption-text">Example output from the downscaling process for rainfed maize in Mozambique</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
-</figcaption>
-</figure>
-</section>
-<section id="special-notes">
-<h2>Special notes<a class="headerlink" href="#special-notes" title="Link to this heading"></a></h2>
-<p>The downscaling process is a good – yet experimental – way to achieve higher granularity of crop distribution, especially in areas where there is data scarcity.</p>
-<p>The FLAT model that was selected in this assignment is open source (although GAMS is needed for big datasets) and straightforward to test, use and customize. It predicts cropland allocation using pixel-level biophysical attributes which are openly available at the desired spatial resolution (1 km). The econometric approach provides estimates of the effects of biophysical factors on cropland allocation.</p>
-<p>FLAT performance metrics are in alignment with available literature; visual inspection of results does also agree with qualitative findings from sample agricultural survey. However, the selected cross-validation approach highlighted that inconsistencies in the sample dataset are high to achieve any satisfactory results. This highlights the need for standardization of collection, processing and dissemination of survey related datasets.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A first and second order validation process was conducted in this project and is available in the <a class="reference external" href="tbd">project report</a>. This was implemented through a Python script available as <a class="reference external" href="https://github.com/akorkovelos/agrodem/tree/master/agrodem_postprocessing/Cross_Validation">CrossValidation</a>.</p>
-</div>
 </section>
 </section>
 
