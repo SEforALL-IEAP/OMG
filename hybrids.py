@@ -41,7 +41,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
         npc = 0
     else:
         lcoe, investment, battery_investment, fuel_cost, \
-            om_cost, npc, fuel_usage = calculate_hybrid_lcoe(diesel_price=diesel_price,
+            om_cost, npc, fuel_usage, annual_om = calculate_hybrid_lcoe(diesel_price=diesel_price,
                                                  end_year=end_year,
                                                  start_year=start_year,
                                                  annual_demand=annual_demand,
@@ -65,7 +65,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, i
                                                  discount_rate=discount_rate)
 
     return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
-        battery_life, pv, diesel, npc, fuel_usage
+        battery_life, pv, diesel, npc, fuel_usage, annual_om
 
 @numba.njit
 def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
@@ -284,7 +284,7 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
             total_battery_investment -= (1 - (
                     project_life % battery_life) / battery_life) * battery_cost * battery_size
 
-        investment += diesel_investment + pv_investment + battery_investment + inverter_investment - salvage
+        investment += (diesel_investment + pv_investment + battery_investment + inverter_investment) / ((1 + discount_rate) ** year) # Removed salvage
         total_battery_investment += battery_investment
 
         sum_costs += (fuel_costs + om_costs + battery_investment + diesel_investment + pv_investment +
@@ -296,7 +296,7 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
         if year > 0:
             sum_el_gen += annual_demand / ((1 + discount_rate) ** year)
 
-    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc, fuel_usage
+    return sum_costs / sum_el_gen, investment, total_battery_investment, total_fuel_cost, total_om_cost, npc, fuel_usage, om_costs + fuel_costs
 
 
 @numba.njit
@@ -437,7 +437,7 @@ def calculate_distribution_lcoe(end_year, start_year, annual_demand,
         distribution_investment = 0
 
         # Accumulate total O&M costs discounted
-        total_om_cost += om_costs / (1 + discount_rate) ** year
+        total_om_cost += om_costs / ((1 + discount_rate) ** year)
         
         # Reinvestment in distribution grid based on its lifetime
         if year % distribution_life == 0:
@@ -448,7 +448,7 @@ def calculate_distribution_lcoe(end_year, start_year, annual_demand,
             salvage = (1 - (project_life % distribution_life) / distribution_life) * distribution_cost
         
         # Accumulate investment, accounting for salvage in the final year
-        investment += distribution_investment - salvage
+        investment += (distribution_investment) / ((1 + discount_rate) ** year) # Removed salvage
 
         # Accumulate total costs discounted
         sum_costs += (om_costs + distribution_investment - salvage) / ((1 + discount_rate) ** year)
@@ -463,5 +463,5 @@ def calculate_distribution_lcoe(end_year, start_year, annual_demand,
     # Calculate LCOE
     lcoe = sum_costs / sum_el_gen
     
-    return lcoe, investment, total_om_cost, npc, sum_el_gen
+    return lcoe, investment, total_om_cost, npc, sum_el_gen, om_costs
 
