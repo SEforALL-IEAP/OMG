@@ -1,7 +1,7 @@
 # OnSSET for Mini-Grids (OMG)
 Quick techno-economic analysis of potential mini-grid sites. The script is based on [OnSSET](http://www.onsset.org/) model with modifications to accommodate specifications related to the overall viability of mini-grids.
 
-[![Documentation Status](https://readthedocs.org/projects/omg-userguide/badge/?version=latest)](https://omg-userguide.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/omg-userguide/badge/?version=latest)](https://omg-userguide.readthedocs.io/en/main/?badge=main)
 
 ## Content
 This repository contains:
