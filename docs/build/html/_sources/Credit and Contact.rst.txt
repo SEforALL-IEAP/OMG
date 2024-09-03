@@ -1,6 +1,6 @@
 ﻿Credit and Contact 
 ==================================
-This work has been supported by `SEforALL UIEP team <https://www.seforall.org/programmes/universal-integrated-energy-plans>`_ and is part of a multi-year `GEAPP <https://energyalliance.org/>`_-funded project - aiming to facilitate the execution of geospatial electrification planning activities in various sub-Saharan African countries.
+This work has been supported by `SEforALL UIEP team <https://www.seforall.org/programmes/universal-integrated-energy-plans>`_ aiming to facilitate the execution of geospatial electrification planning activities focusing on mini-grids. The work is supported by a multi-year `GEAPP <https://energyalliance.org/>`_-funded project and by `Carbon Trust <https://www.carbontrust.com/en-eu>`_ through the `Mini-Grids Partnership <https://minigrids.org/>`_.
 
 Contributions are described below:
 
@@ -13,6 +13,6 @@ Contributions are described below:
 
 For any questions, feedback or general inquiries please to not hesitate to contact the development team.
 
-- Alexandros Korkovelos <alexandroskorkovelos@seforall.org>
-- Andreas Sahlberg <mandreas.sahlberg@seforall.org>
+- Alexandros Korkovelos <alexandros.korkovelos@seforall.org>
+- Andreas Sahlberg <andreas.sahlberg@seforall.org>
 - Nishant Narayan <nishant.narayan@seforall.org>     

@@ -31,7 +31,6 @@ Contents
    Electricity Demand module
    Mini-Grid optimization module
    Network layout generator module
-   Results
    Credit and Contact
 
 

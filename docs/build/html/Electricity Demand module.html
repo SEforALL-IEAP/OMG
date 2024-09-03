@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Electricity Demand module &mdash; OnSSET for Mini Grids 0.0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
@@ -53,7 +53,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Mini-Grid%20optimization%20module.html">Mini-Grid optimization module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Network%20layout%20generator%20module.html">Network layout generator module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Results.html">Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Credit%20and%20Contact.html">Credit and Contact</a></li>
 </ul>
 
@@ -85,8 +84,7 @@
 <h1>Electricity Demand module<a class="headerlink" href="#electricity-demand-module" title="Link to this heading"></a></h1>
 <section id="load-characterization">
 <h2>Load characterization<a class="headerlink" href="#load-characterization" title="Link to this heading"></a></h2>
-<p>For each settlement, the user can specify the connectivity rate, which indicates the max number of potential connections. The default value is set at 70% based on empirical observations of the team members on the ground, but the user can set this value as needed.</p>
-<p>Load characterization is an important component of mini grid sizing. In the OMG model we assumed five customer types namely:</p>
+<p>Load characterization is an important component of mini grid sizing. In the OMG model we assumed five customer types by default, namely:</p>
 <ul class="simple">
 <li><p><strong>Residential Bundle A</strong> -&gt; Low consumption residential customers</p></li>
 <li><p><strong>Residential Bundle B</strong> -&gt; Average consumption residential customers</p></li>
@@ -96,8 +94,8 @@
 </ul>
 <p>There are two options available in the OMG model currently:</p>
 <p><strong>Option 1:</strong> Estimate based on building type and archetypes</p>
-<p>In this option the total load is estimated using an estimate of customers per bundle (using the building footprints) and predefined load archatypes. The distribution of buildings into the different bundles can be determined by the user. Here the default values derive from empirical observations in 25 sites in Zambia. That is, 47% of structure were classified as Res. Bundle A, 35% as Res. Bundle B, 8% as Res. Bundle C, 8% under the SME Bundle and ~2% under the PUE bundle. The user can modify these values as/if required.</p>
-<p>The aggregation of customers per bundle and load profiles leads to a mixed load profile, which is then multiplied by 365 to create a yearly load profile, which is - in turn - used in the mini-grid optimization module.</p>
+<p>In this option the total load is estimated using an estimate of customers per bundle (using the building footprints) and predefined load archetypes. The distribution of buildings into the different bundles can be determined by the user. Here the default values derive from empirical observations in 25 sites in Zambia. That is, 47% of structure were classified as Residential Bundle A, 35% as Residential Bundle B, 8% as Residential Bundle C, 8% under the SME Bundle and ~2% under the PUE bundle. The user can modify these values as/if required.</p>
+<p>The aggregation of customers per bundle and load profiles leads to a mixed daily load profile, which is then multiplied by 365 to create a yearly load profile, which is - in turn - used in the mini-grid optimization module.</p>
 <figure class="align-center" id="id1">
 <img alt="_images/demandprofiles.png" src="_images/demandprofiles.png" />
 <figcaption>
@@ -109,8 +107,7 @@
 <p>A more elaborate description of the load archetypes is available in the <a class="reference external" href="https://github.com/SEforALL-IEAP/OMG/blob/main/Input_data/sample_load_archetypes.xlsx">sample load archetypes</a> file under the Input data directory on GitHub.</p>
 </div>
 <p><strong>Option 2:</strong> Detailed annual hourly load profile from surveys</p>
-<p>In case the user prefers to provide the hourly profiles for the entire year (8760 time slices) for the five types of users, there is an option to do so via the <a class="reference external" href="https://github.com/SEforALL-IEAP/OMG/blob/main/Input_data/demand_per_connection_type.csv">demand_per_connection_type</a> file. The unit is in Watts (W).</p>
-<p>Finally, in case the use wants to add additional types of customers, that is possible, however the OMG algorithm related to demand (calc_load_curve functions) needs to be updated accordingly.</p>
+<p>In case the user prefers to provide the hourly profiles for the entire year (8760 time slices) there is an option to do so by reading the data directly from a csv-file. Note that the units should be in Watts (W).</p>
 </section>
 </section>
 

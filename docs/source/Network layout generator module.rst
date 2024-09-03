@@ -3,9 +3,9 @@
 
 Overview
 ****************
-A grid network allows different households to connect to the PV Minigrid. Traditionally, in Integrated Energy Planning, the sizing of distribution networks in settlements is done through indirect calculations based on the number of users, the size of clusters, or by using Minimum Spanning Trees (MST).
+A grid network allows different households to connect to the PV Minigrid. Traditionally, in large-scale Integrated Energy Planning, the sizing of distribution networks in settlements is done through indirect calculations based on the number of users, the size of clusters, or by using Minimum Spanning Trees (MST). Alternatively, for single locations the grid is often designed in an manual process.
 
-All of these approaches are rough approximations that neglect the inherent complexity of the problem. In most cases, when planning, grids follow existing roads, as they can easily bend and branch off to connect more buildings. However, this means the grid does not follow an optimal path but is instead restricted by the topological distribution of households within the settlements. Moreover, road layers might not be available in remote areas where mini-grids are a suitable electrification alternative, leaving a gap in grid sizing that uses roads as an input.
+The rule-of-thumb or MST based approaches are rough approximations that neglect the inherent complexity of the problem. In most cases, when planning, grids follow existing roads, as they can easily bend and branch off to connect more buildings. However, this means the grid does not follow an optimal path but is instead restricted by the topological distribution of households within the settlements. Moreover, road layers might not be available in remote areas where mini-grids are a suitable electrification alternative, leaving a gap in grid sizing that uses roads as an input.
 
 Given this context, OnSSET-MG includes a methodological approach to size the distribution network for a given settlement using its boundaries and the building footprint layer of the households as the main inputs. The module identifies key attributes of the distribution network: trunk lines, branch lines, service drops, and poles. With associated capital costs, it can also compute investment costs and utilize the LCOE equation to estimate distribution costs per kilowatt.
 
