@@ -214,7 +214,7 @@ def simplify_trunk_lines(trunks, length_removal=100, split_distance=500, plot=Tr
     verts = []  # Store the vertices
 
     # Get all the line segments of the MultiLineString
-    trunk_linestrings = trunks.explode()
+    trunk_linestrings = trunks.explode(index_parts=True)
     trunk_linestrings.reset_index(inplace=True)
     
     # Iterate over all the LineString segments and add vertices to list
@@ -663,11 +663,6 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
 
 def creating_grid(trunk_lines, voronois, community, households_centroids, target_crs, pole_dist=50, buffer=25):
 
-    # This function generates a comprehensive electrical distribution grid for a specified community. 
-    # It iterates over trunk lines within defined areas (Voronoi cells), placing poles, assigning households to 
-    # the nearest poles, and creating servicedrops. The outputs are GeoDataFrames containint geometry for
-    # trunk lines, secondary branches, drop service and poles.
-    
     # Initialize lists to store results
     trunk_p = []  # List to store trunk poles
     assigned_p = []  # List to store assigned poles
@@ -701,7 +696,7 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
         all_p += all_poles
             
         # Clip household centroids to the current Voronoi cell
-        polygon_households = households_centroids.clip(voronois[id])
+        polygon_households = households_centroids.clip(voronois[id]).copy()  # Ensure it's a copy
     
         # Convert MultiPoint geometries to Point if necessary
         polygon_households['geometry'] = polygon_households['geometry'].apply(convert_multipoint_to_point)
@@ -748,44 +743,47 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
     multi_poles.append(MultiPoint(mst_p))
 
     # Create GeoDataFrame for trunk lines
-    trunks_gdf = gpd.GeoDataFrame()
-    trunks_gdf['Length'] = multi_trunks_len
-    trunks_gdf['Type'] = "Trunk Line"
-    trunks_gdf.geometry = multi_trunks
+    trunks_gdf = gpd.GeoDataFrame({
+        'Length': multi_trunks_len,
+        'Type': "Trunk Line",
+        'geometry': multi_trunks,
+        'id':  community
+    })
     trunks_gdf.set_crs(target_crs, inplace=True)  # Set the coordinate reference system (CRS)
-    trunks_gdf['Community'] = community
-    
+
     # Create GeoDataFrame for secondary lines
-    secondary_gdf = gpd.GeoDataFrame()
-    secondary_gdf['Length'] = multi_secondary_len
-    secondary_gdf['Type'] = "Secondary Line"
-    secondary_gdf.geometry = multi_secondary
+    secondary_gdf = gpd.GeoDataFrame({
+        'Length': multi_secondary_len,
+        'Type': "Secondary Line",
+        'geometry': multi_secondary,
+        'id': community
+    })
     secondary_gdf.set_crs(target_crs, inplace=True)
-    secondary_gdf['Community'] = community
-    
+
     # Create GeoDataFrame for service lines
-    service_gdf = gpd.GeoDataFrame()
-    service_gdf['Length'] = multi_service_len
-    service_gdf['Type'] = "Service Line"
-    service_gdf.geometry = multi_service
+    service_gdf = gpd.GeoDataFrame({
+        'Length': multi_service_len,
+        'Type': "Service Line",
+        'geometry': multi_service,
+        'id': community
+    })
     service_gdf.set_crs(target_crs, inplace=True)
-    service_gdf['Community'] = community
-    
+
     # Create GeoDataFrame for poles
-    poles_gdf = gpd.GeoDataFrame()
-    poles_gdf.geometry = multi_poles
-    for i, multi_pole in enumerate(multi_poles):
-        num_poles = len(multi_pole.geoms)  # Count the number of poles in each MultiPoint
-    poles_gdf['No. Poles'] = num_poles
+    poles_gdf = gpd.GeoDataFrame({
+        'geometry': multi_poles,
+        'No. Poles': [len(p.geoms) for p in multi_poles],
+        'id': community
+    })
     poles_gdf.set_crs(target_crs, inplace=True)
-    poles_gdf['Community'] = community
-    poles_gdf=poles_gdf.explode(index_parts=False)
 
     # Combine all line geometries (trunk, secondary, service) into a single GeoDataFrame
     total_grid_gdf = gpd.GeoDataFrame(pd.concat([trunks_gdf, secondary_gdf, service_gdf], ignore_index=True))
 
     # Return the combined grid GeoDataFrame, poles GeoDataFrame, and individual line GeoDataFrames
     return total_grid_gdf, poles_gdf, service_gdf, secondary_gdf, trunks_gdf
+
+
 
 def plotting_jpeg(country, name_community, id, No_Households, gpd_mg, service_gdf, secondary_gdf, trunks_gdf, poles, clip_footprints):
 
