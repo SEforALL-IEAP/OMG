@@ -113,12 +113,8 @@ def voronoi_areas(simple_trunk, polygon, spacing=25, plot=True):
 
     return dissolved_regions
 
-def create_trunk_line(polygon, spacing=100, plot=True):
-    # This function takes a polygon and creates a trunk line for the distribution network
-    # First, it generates points along the polygon boundary at a specified spacing. Then it creates voronoi polygons using those points.
-    # Finally, the lines of the voronoi polygons are intersected with the polygon boundaries.
-    # The line segments that do not intersect with the exterior of the polygon are used as the trunk line
-  
+def create_trunk_line(polygon, spacing=50, plot=True):
+    
     # Extract the boundary of the polygon
     boundary = polygon.boundary
     
@@ -139,7 +135,24 @@ def create_trunk_line(polygon, spacing=100, plot=True):
     
     # Convert the list of points to a NumPy array
     point_array = np.array([[point.x, point.y] for point in points])
-    vor = Voronoi(point_array, furthest_site=False)
+    
+    minx, miny, maxx, maxy = polygon.bounds
+    
+    # Calculate padding as a fraction of the bounding box size (e.g., 10% of the max dimension)
+    width = maxx - minx
+    height = maxy - miny
+    padding = max(width, height) * 0.1  # 10% of the larger dimension
+    
+    extra_points = np.array([
+        [minx - padding, miny - padding],
+        [maxx + padding, miny - padding],
+        [maxx + padding, maxy + padding],
+        [minx - padding, maxy + padding]
+    ])
+    
+    all_points = np.vstack([point_array, extra_points])
+    
+    vor = Voronoi(all_points, furthest_site=False)
     
     # Create a list to hold the polygons
     voronoi_polygons = []
@@ -205,7 +218,7 @@ def create_trunk_line(polygon, spacing=100, plot=True):
         points_gdf.plot(ax=ax, color='blue', markersize=50, label='Boundary Points')
         trunk_lines.plot(ax=ax, color='red', label='Trunk')
         ax.legend()
-
+        
     return trunk_lines
 
 def simplify_trunk_lines(trunks, length_removal=100, split_distance=500, plot=True):
@@ -345,7 +358,7 @@ def create_candidate_poles_old(polygon, trunk, distance, buffer=50, plot=True):
             if intersection.geom_type == 'Point':
                 intersection_points_2.append(intersection)
             elif intersection.geom_type == 'MultiPoint':
-                print('MultiPoint')
+                length = len(linestring)
             else:
                 print(intersection.geom_type)
                 #for p in intersection.geoms:
@@ -364,7 +377,7 @@ def create_candidate_poles_old(polygon, trunk, distance, buffer=50, plot=True):
             if intersection.geom_type == 'Point':
                 intersection_points_3.append(intersection)
             elif intersection.geom_type == 'MultiPoint':
-                print('MultiPoint')
+                length = len(linestring)
             else:
                 print(intersection.geom_type)
                 #for p in intersection.geoms:
@@ -660,19 +673,15 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
 
     return all_candidates, intersection_points, poles, angle_radians_w, angle_radians_l
 
-
 def creating_grid(trunk_lines, voronois, community, households_centroids, target_crs, pole_dist=50, buffer=25):
-
-    # Initialize lists to store results
-    trunk_p = []  # List to store trunk poles
-    assigned_p = []  # List to store assigned poles
-    lv_l = []  # List to store low-voltage lines (secondary lines)
-    service_l = []  # List to store service lines (connections to households)
-    mst_p = []  # List to store minimum spanning tree (MST) poles
-    all_p = []  # List to store all poles
-    long_services = 0  # Counter for service lines longer than 70 units
+    trunk_p = []
+    assigned_p = []
+    lv_l = []
+    service_l = []
+    mst_p = []
+    all_p = []
+    long_services = 0
     
-    # Initialize lists to store geometries for the entire grid
     multi_trunks = []
     multi_trunks_len = []
     
@@ -684,46 +693,86 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
     
     multi_poles = []
     multi_all_poles = []
-    
-    # Iterate over each trunk line segment
-    for id in range(len(trunk_lines)):
-        # Create candidate poles along the trunk line within the Voronoi cell
-        all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l = create_candidate_poles_old(
-            voronois[id], trunk_lines[id], pole_dist, buffer=buffer, plot=False)
-    
-        # Append the newly created trunk poles and all poles to the respective lists
-        trunk_p += trunk_poles
-        all_p += all_poles
-            
-        # Clip household centroids to the current Voronoi cell
-        polygon_households = households_centroids.clip(voronois[id]).copy()  # Ensure it's a copy
-    
-        # Convert MultiPoint geometries to Point if necessary
-        polygon_households['geometry'] = polygon_households['geometry'].apply(convert_multipoint_to_point)
-    
-        # Assign households to the nearest poles and calculate service drops
-        assigned_poles, service_drops = assign_households(all_poles, polygon_households)
-    
-        # Append the assigned poles and service drops to their respective lists
-        assigned_p += all_poles
-        service_l += service_drops
-    
-        # Count service lines longer than 70 units
-        for s in service_drops:
-            if s.length > 70:
-                long_services += 1
-    
-        # Weighting factor for the minimum spanning tree (MST)
-        weight = 0.5
-    
-        # Generate low-voltage lines (secondary lines) using MST of poles
-        lv_lines, mst_poles = lv_lines_mst(
-            all_poles, trunk_poles, assigned_poles, angle_radians_w, angle_radians_l, weight, plot=False)
-    
-        # Append the MST poles and low-voltage lines to their respective lists
-        lv_l += lv_lines
-        mst_p += mst_poles
 
+    if len(trunk_lines) == len(voronois):
+        for id in range(len(trunk_lines)):
+            # Create candidate poles along the trunk line within the Voronoi cell
+            all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l = create_candidate_poles_old(
+                voronois[id], trunk_lines[id], pole_dist, buffer=buffer, plot=False)
+        
+            # Append the newly created trunk poles and all poles to the respective lists
+            trunk_p += trunk_poles
+            all_p += all_poles
+                
+            # Clip household centroids to the current Voronoi cell
+            polygon_households = households_centroids.clip(voronois[id]).copy()  # Ensure it's a copy
+        
+            # Convert MultiPoint geometries to Point if necessary
+            polygon_households.loc[:, 'geometry'] = polygon_households['geometry'].apply(convert_multipoint_to_point)
+
+            # Assign households to the nearest poles and calculate service drops
+            assigned_poles, service_drops = assign_households(all_poles, polygon_households)
+        
+            # Append the assigned poles and service drops to their respective lists
+            assigned_p += all_poles
+            service_l += service_drops
+        
+            # Count service lines longer than 70 units
+            for s in service_drops:
+                if s.length > 70:
+                    long_services += 1
+        
+            # Weighting factor for the minimum spanning tree (MST)
+            weight = 0.5
+        
+            # Generate low-voltage lines (secondary lines) using MST of poles
+            lv_lines, mst_poles = lv_lines_mst(
+                all_poles, trunk_poles, assigned_poles, angle_radians_w, angle_radians_l, weight, plot=False)
+        
+            # Append the MST poles and low-voltage lines to their respective lists
+            lv_l += lv_lines
+            mst_p += mst_poles
+    
+    else:
+        for vor_regions in voronois:
+            for line in trunk_lines:
+                intersection = vor_regions.intersection(line)
+                if not intersection.is_empty and isinstance(intersection, LineString):
+                    # Calculate the percentage of overlap
+                    intersection_length = intersection.length
+                    total_line_length = line.length
+                    overlap_percentage = (intersection_length / total_line_length) * 100
+        
+                    if overlap_percentage >70:
+                        #print(f"The line overlaps {overlap_percentage:.2f}% of its length with the polygon.")
+                        
+                        all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l =\
+                        create_candidate_poles_old(vor_regions, line, pole_dist, buffer=25, plot=False)
+        
+                        trunk_p += trunk_poles
+                        all_p += all_poles
+                            
+                        polygon_households = households_centroids.clip(vor_regions)
+                    
+                        # Ensure households are not MultiPoint
+                        polygon_households.loc[:, 'geometry'] = polygon_households['geometry'].apply(convert_multipoint_to_point)
+                    
+                        assigned_poles, service_drops = assign_households(all_poles, polygon_households)
+                    
+                        assigned_p += all_poles
+                        service_l += service_drops
+                    
+                        for s in service_drops:
+                            if s.length > 70:
+                                long_services += 1
+                    
+                        weight = 0.5  # Weighting factor for the MST
+                    
+                        lv_lines, mst_poles = lv_lines_mst(all_poles, trunk_poles, assigned_poles, angle_radians_w, angle_radians_l, weight, plot=False)
+                    
+                        lv_l += lv_lines
+                        mst_p += mst_poles
+    
     # Combine all generated poles into a MultiPoint geometry
     multi_all_poles.append(MultiPoint(all_p))
 
