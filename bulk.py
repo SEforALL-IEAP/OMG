@@ -247,7 +247,10 @@ def optimizer_de(diesel_price,
     # Define the solution space for the optimization
     battery_bounds = [0, 5 * demand / 365]
     pv_bounds = [0, 5 * max(load_curve)]
-    diesel_bounds = [0.5, max(load_curve)]
+    if max(load_curve) < 0.5:
+        diesel_bounds = [0.5, 0.5]
+    else:
+        diesel_bounds = [0.5, max(load_curve)]
     
     min_bounds = np.array([pv_bounds[0], battery_bounds[0], diesel_bounds[0]])
     max_bounds = np.array([pv_bounds[1], battery_bounds[1], diesel_bounds[1]])
