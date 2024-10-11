@@ -375,29 +375,28 @@ def get_pv_data(latitude, longitude, token, output_folder):
     else:
         if token != '':
     
-            try:
-                r = s.get(url, params=args)
+            r = s.get(url, params=args)
+
+            if r.status_code == 403:
+                print('Unable to retrieve data, invalid token')
+            elif r.status_code == 400:
+                print('Requested coordinates not within boundaries of dataset `merra2`, check the coordinate system of the cluster polygon')
+            else:
+                if r.status_code == 429:
+                    print('API maximum hourly requests reached, waiting one hour before trying again', time.ctime())
+                    time.sleep(3700)
     
                 # Parse JSON to get a pandas.DataFrame of data and dict of metadata
                 parsed_response = json.loads(r.text)
     
-            except json.decoder.JSONDecodeError:
-                print('API maximum hourly requests reached, waiting one hour', time.ctime())
-                time.sleep(3700)
-                print('Wait over, resuming API requests', time.ctime())
-                r = s.get(url, params=args)
-    
-                # Parse JSON to get a pandas.DataFrame of data and dict of metadata
-                parsed_response = json.loads(r.text)
-    
-            data = pd.read_json(StringIO(json.dumps(parsed_response['data'])), orient='index')
-    
-            df_out = pd.DataFrame(columns=['time', 'ghi', 'temp'])
-            df_out['ghi'] = (data['irradiance_direct'] + data['irradiance_diffuse']) * 1000
-            df_out['temp'] = data['temperature']
-            df_out['time'] = data['local_time']
-    
-            df_out.to_csv(out_path, index=False)
+                data = pd.read_json(StringIO(json.dumps(parsed_response['data'])), orient='index')
+        
+                df_out = pd.DataFrame(columns=['time', 'ghi', 'temp'])
+                df_out['ghi'] = (data['irradiance_direct'] + data['irradiance_diffuse']) * 1000
+                df_out['temp'] = data['temperature']
+                df_out['time'] = data['local_time']
+        
+                df_out.to_csv(out_path, index=False)
             
         else:
             print('No token provided')
