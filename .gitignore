@@ -5,3 +5,5 @@
 *.gpkg
 .ipynb_checkpoints/dist_funcs-checkpoint.py
 .ipynb_checkpoints/hybrids-checkpoint.py
+*.jpg
+*.gpkg

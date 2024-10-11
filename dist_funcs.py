@@ -296,124 +296,6 @@ def simplify_trunk_lines(trunks, length_removal=100, split_distance=500, plot=Tr
 
     return spl_2, intersections
 
-def create_candidate_poles_old(polygon, trunk, distance, buffer=50, plot=True):
-    # This function creates a grid of candidate poles within the selected Polygon (which may be a sub-area of a larger polygon).
-    # The poles are aligned along the x- and y-axis of the minimum bounding rectangle that contains the polygon.
-    # Poles that are within a specified buffer distance from the trunk lines are omitted, as buildings within this distance are assumed to connect  
-    # directly to a pole on the trunk line.
-    
-    mesh_lines_2 = []
-    mesh_lines_3 = []
-    poles = []
-    candidate_poles = {}
-    road_points_all = {}
-
-    # Create a buffer around the trunk line to ensure no poles are within that buffer. Households nearby connect directly to the trunk poles
-    buffered_trunk = trunk.buffer(buffer)    
-
-    # Find the orientation of the polygon
-    angle_radians_w, angle_radians_l, polygon_length, polygon_width, start_x, start_y = polygon_rotation(polygon)
-
-    # the number of candidate poles to be spaced out length-wise and width-wise
-    length_points = polygon_length / distance
-    width_points = polygon_width / distance
-
-    for w in range(math.ceil(width_points)+1):
-        for l in range(math.ceil(length_points)+1):
-            x = start_x + w * distance * np.cos(angle_radians_w) - l * distance * np.cos(angle_radians_l)
-            y = start_y  + w * distance * np.sin(angle_radians_w) - l * distance * np.sin(angle_radians_l)
-            
-            point = Point(x, y)  # This is a candidate pole (if not within the buffer distance from the trunk)
-            if polygon.contains(point):
-                if point.within(buffered_trunk):
-                    pass
-                else:
-                    poles.append(point)
-
-            # This creates lines connecting points in the mesh as a grid
-            x_next_1 = start_x + (w + 1) * distance * np.cos(angle_radians_w) - l * distance * np.cos(angle_radians_l)
-            y_next_1 = start_y  + (w + 1) * distance * np.sin(angle_radians_w) - l * distance * np.sin(angle_radians_l)
-
-            x_next_2 = start_x + w * distance * np.cos(angle_radians_w) - (l + 1) * distance * np.cos(angle_radians_l)
-            y_next_2 = start_y  + w * distance * np.sin(angle_radians_w) - (l + 1) * distance * np.sin(angle_radians_l)
-            
-            point_2 = Point(x_next_1, y_next_1)  # This is the next pole in one direction
-            point_3 = Point(x_next_2, y_next_2)  # This is the next pole in the other direction
-
-            mesh_lines_2.append(LineString([point, point_2]))  
-            mesh_lines_3.append(LineString([point, point_3]))
-
-    mesh_lines_gdf_2 = gpd.GeoDataFrame(geometry=mesh_lines_2)
-    mesh_lines_gdf_3 = gpd.GeoDataFrame(geometry=mesh_lines_2)
-
-    intersection_points_2 = []
-    
-    # Iterate over the linestrings in the mesh grid to find where they intersect with the trunk, and adds poles at those locations
-    for idx, linestring in mesh_lines_gdf_2.iterrows():
-        # Check if the linestring intersects with the multilinestring
-        if linestring['geometry'].intersects(unary_union(trunk)):
-            # If there is an intersection, get the intersection points
-            intersection = linestring['geometry'].intersection(unary_union(trunk))
-            # If the intersection is a point, store it in the GeoDataFrame
-            if intersection.geom_type == 'Point':
-                intersection_points_2.append(intersection)
-            elif intersection.geom_type == 'MultiPoint':
-                length = len(linestring)
-            else:
-                print(intersection.geom_type)
-                #for p in intersection.geoms:
-                #    print(p)
-                #pass  # ToDo in case there are more than one intersection
-
-    intersection_points_3 = []
-    
-    # Iterate over the linestrings in the mesh grid to find where they intersect with the trunk, and adds poles at those locations
-    for idx, linestring in mesh_lines_gdf_3.iterrows():
-        # Check if the linestring intersects with the multilinestring
-        if linestring['geometry'].intersects(unary_union(trunk)):
-            # If there is an intersection, get the intersection points
-            intersection = linestring['geometry'].intersection(unary_union(trunk))
-            # If the intersection is a point, store it in the GeoDataFrame
-            if intersection.geom_type == 'Point':
-                intersection_points_3.append(intersection)
-            elif intersection.geom_type == 'MultiPoint':
-                length = len(linestring)
-            else:
-                print(intersection.geom_type)
-                #for p in intersection.geoms:
-                #    print(p)
-                #pass  # ToDo in case there are more than one intersection
-    
-
-    if len(intersection_points_2) > len(intersection_points_3):
-        intersection_points = intersection_points_2
-    else:
-        intersection_points = intersection_points_3
-
-    intersection_points = intersection_points_2 + intersection_points_3
-
-    intersection_points.append(Point(trunk.coords[0]))
-    intersection_points.append(Point(trunk.coords[-1]))
-    
-    all_candidates = poles + intersection_points
-    
-    if plot:
-        fig, ax = plt.subplots(figsize=(10, 10))
-
-        all_candidates_gdf = gpd.GeoDataFrame(geometry=all_candidates)
-        #polygon_gdf = gpd.GeoDataFrame(geometry=polygon)
-        #polygon_gdf.plot(ax=ax, color='gray')
-        #polygon.plot(ax=ax, color='gray')
-        all_candidates_gdf.plot(ax=ax)
-
-        trunk_gdf = gpd.GeoDataFrame(geometry=trunk)
-        trunk_gdf.plot(ax=ax, color='red')
-        #trunk.plot(ax=ax, color='red')
-           
-        plt.show()
-
-    return all_candidates, intersection_points, poles, angle_radians_w, angle_radians_l
-
 def assign_households(candidate_poles, households):
     # This function assigns households to the nearest candidate pole, then returns the selected poles and the required service drops.
     
@@ -486,7 +368,7 @@ def lv_lines_mst(poles, trunk_poles, assigned_poles, angle_radians_w, angle_radi
                         weight_factor_v = (all_poles.dist.iloc[v] / spacing) / 10
                         G.add_edge(u, v, weight=distance * (1 + weight_factor_u + weight_factor_v) * 2)
                 else:
-                    G.add_edge(u, v, weight=999999)
+                    G.add_edge(u, v, weight=100 * distance)
 
     #target_points = trunk_poles
     target_points = []
@@ -525,6 +407,7 @@ def lv_lines_mst(poles, trunk_poles, assigned_poles, angle_radians_w, angle_radi
     if plot:
         # Plot the original points
         fig, ax = plt.subplots(figsize=(10, 10))
+        
         all_poles.plot(ax=ax, color='blue')
         
         # Plot edges of the MST
@@ -534,7 +417,15 @@ def lv_lines_mst(poles, trunk_poles, assigned_poles, angle_radians_w, angle_radi
             x2, y2 = G.nodes[v]['pos']
             ax.plot([x1, x2], [y1, y2], color='red')
     
-            lv_lines.append(LineString([Point(x1,y1), Point(x2, y2)]))
+            if Point(x1,y1) not in mst_poles:
+                mst_poles.append(Point(x1,y1))
+            if Point(x2,y2) not in mst_poles:
+                mst_poles.append(Point(x2,y2))    
+            
+            if (Point(x1,y1) in trunk_poles) & (Point(x2, y2) in trunk_poles):
+                pass
+            else:
+                lv_lines.append(LineString([Point(x1,y1), Point(x2, y2)]))
         
         plt.show()
     
@@ -572,13 +463,16 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
 
     # Find the orientation of the polygon
     angle_radians_w, angle_radians_l, polygon_length, polygon_width, start_x, start_y = polygon_rotation(polygon)
+    bounding_box = minimum_rotated_rectangle(polygon)
 
     # the number of candidate poles to be spaced out length-wise and width-wise
     length_points = polygon_length / distance
     width_points = polygon_width / distance
 
-    for w in range(math.ceil(width_points)+1):
-        for l in range(math.ceil(length_points)+1):
+    no_p = max(length_points, width_points)
+
+    for w in range(math.ceil(no_p)+1):
+        for l in range(math.ceil(no_p)+1):
             x = start_x + w * distance * np.cos(angle_radians_w) - l * distance * np.cos(angle_radians_l)
             y = start_y  + w * distance * np.sin(angle_radians_w) - l * distance * np.sin(angle_radians_l)
             
@@ -603,7 +497,7 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
             mesh_lines_3.append(LineString([point, point_3]))
 
     mesh_lines_gdf_2 = gpd.GeoDataFrame(geometry=mesh_lines_2)
-    mesh_lines_gdf_3 = gpd.GeoDataFrame(geometry=mesh_lines_2)
+    mesh_lines_gdf_3 = gpd.GeoDataFrame(geometry=mesh_lines_3)
 
     intersection_points_2 = []
     
@@ -649,7 +543,7 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
     else:
         intersection_points = intersection_points_3
 
-    intersection_points = intersection_points_2 + intersection_points_3
+    #intersection_points = intersection_points_2 + intersection_points_3
 
     intersection_points.append(Point(trunk.coords[0]))
     intersection_points.append(Point(trunk.coords[-1]))
@@ -660,15 +554,14 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
         fig, ax = plt.subplots(figsize=(10, 10))
 
         all_candidates_gdf = gpd.GeoDataFrame(geometry=all_candidates)
-        #polygon_gdf = gpd.GeoDataFrame(geometry=polygon)
-        #polygon_gdf.plot(ax=ax, color='gray')
-        #polygon.plot(ax=ax, color='gray')
+        bounding_gdf = gpd.GeoSeries(bounding_box)
+        bounding_gdf.plot(ax=ax, color='green')
+        polygon_gdf = gpd.GeoSeries(polygon)
+        polygon_gdf.plot(ax=ax, color='gray')
+        trunk_gdf = gpd.GeoSeries(trunk)
+        trunk_gdf.plot(ax=ax, color='red')
         all_candidates_gdf.plot(ax=ax)
 
-        trunk_gdf = gpd.GeoDataFrame(geometry=trunk)
-        trunk_gdf.plot(ax=ax, color='red')
-        #trunk.plot(ax=ax, color='red')
-           
         plt.show()
 
     return all_candidates, intersection_points, poles, angle_radians_w, angle_radians_l
@@ -697,7 +590,7 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
     if len(trunk_lines) == len(voronois):
         for id in range(len(trunk_lines)):
             # Create candidate poles along the trunk line within the Voronoi cell
-            all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l = create_candidate_poles_old(
+            all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l = create_candidate_poles(
                 voronois[id], trunk_lines[id], pole_dist, buffer=buffer, plot=False)
         
             # Append the newly created trunk poles and all poles to the respective lists
@@ -728,10 +621,23 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
             # Generate low-voltage lines (secondary lines) using MST of poles
             lv_lines, mst_poles = lv_lines_mst(
                 all_poles, trunk_poles, assigned_poles, angle_radians_w, angle_radians_l, weight, plot=False)
+
+            lv_gdf=gpd.GeoSeries(lv_lines)
+            lv_gdf = lv_gdf.buffer(10)
+            all_pole_gdf=gpd.GeoSeries(all_poles)
+            intersecting_points = []
+            # Loop over each point in points_gs
+            for point in all_pole_gdf:
+                # Check if this point intersects with any line in lines_gs
+                if lv_gdf.intersects(point).any():
+                    intersecting_points.append(point)
+            for p in trunk_poles:
+                if p not in intersecting_points:
+                    intersecting_points.append(p)
         
             # Append the MST poles and low-voltage lines to their respective lists
             lv_l += lv_lines
-            mst_p += mst_poles
+            mst_p += intersecting_points # mst_poles
     
     else:
         for vor_regions in voronois:
@@ -747,7 +653,7 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
                         #print(f"The line overlaps {overlap_percentage:.2f}% of its length with the polygon.")
                         
                         all_poles, trunk_poles, poles, angle_radians_w, angle_radians_l =\
-                        create_candidate_poles_old(vor_regions, line, pole_dist, buffer=25, plot=False)
+                        create_candidate_poles(vor_regions, line, pole_dist, buffer=25, plot=False)
         
                         trunk_p += trunk_poles
                         all_p += all_poles
@@ -770,8 +676,22 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
                     
                         lv_lines, mst_poles = lv_lines_mst(all_poles, trunk_poles, assigned_poles, angle_radians_w, angle_radians_l, weight, plot=False)
                     
+                        lv_gdf=gpd.GeoSeries(lv_lines)
+                        lv_gdf = lv_gdf.buffer(10)
+                        all_pole_gdf=gpd.GeoSeries(all_poles)
+                        intersecting_points = []
+                        # Loop over each point in points_gs
+                        for point in all_pole_gdf:
+                            # Check if this point intersects with any line in lines_gs
+                            if lv_gdf.intersects(point).any():
+                                intersecting_points.append(point)
+                        for p in trunk_poles:
+                            if p not in intersecting_points:
+                                intersecting_points.append(p)
+                    
+                        # Append the MST poles and low-voltage lines to their respective lists
                         lv_l += lv_lines
-                        mst_p += mst_poles
+                        mst_p += intersecting_points # mst_poles
     
     # Combine all generated poles into a MultiPoint geometry
     multi_all_poles.append(MultiPoint(all_p))
