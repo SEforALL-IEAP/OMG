@@ -9,6 +9,9 @@ from shapely import minimum_rotated_rectangle, unary_union
 import networkx as nx
 import math
 import warnings
+from collections import Counter
+import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 
 def convert_multipoint_to_point(geometry):
     # This functions converts a MultiPoint to Point
@@ -710,7 +713,20 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
     
     # Combine the MST poles into a MultiPoint geometry
     multi_poles.append(MultiPoint(mst_p))
+    
+    # Create GeoDataFrame for all poles
+    all_candidate_poles_gdf = gpd.GeoDataFrame({
+        'geometry': multi_all_poles,
+    })
+    all_candidate_poles_gdf.set_crs(target_crs, inplace=True)  # Set the coordinate reference system (CRS)
 
+    # Create GeoDataFrame for trunk poles
+    trunk_poles_gdf = gpd.GeoDataFrame({
+        'geometry': trunk_p,
+    })
+    trunk_poles_gdf.set_crs(target_crs, inplace=True)  # Set the coordinate reference system (CRS)
+    
+    
     # Create GeoDataFrame for trunk lines
     trunks_gdf = gpd.GeoDataFrame({
         'Length': multi_trunks_len,
@@ -750,49 +766,404 @@ def creating_grid(trunk_lines, voronois, community, households_centroids, target
     total_grid_gdf = gpd.GeoDataFrame(pd.concat([trunks_gdf, secondary_gdf, service_gdf], ignore_index=True))
 
     # Return the combined grid GeoDataFrame, poles GeoDataFrame, and individual line GeoDataFrames
-    return total_grid_gdf, poles_gdf, service_gdf, secondary_gdf, trunks_gdf
+    return total_grid_gdf, poles_gdf, service_gdf, secondary_gdf, trunks_gdf, trunk_poles_gdf,  all_candidate_poles_gdf
 
 
 
-def plotting_jpeg(country, name_community, id, No_Households, gpd_mg, service_gdf, secondary_gdf, trunks_gdf, poles, clip_footprints):
 
-    gpd_mg=gpd_mg.to_crs(4326)
-    service_gdf=service_gdf.to_crs(4326)
-    secondary_gdf=secondary_gdf.to_crs(4326)
-    trunks_gdf=trunks_gdf.to_crs(4326)
-    poles=poles.to_crs(4326)
-    #clip_footprints=clip_footprints.to_crs(4326)
+def plotting_jpeg(country, cluster, service_gdf, secondary_gdf, trunks_gdf, poles, power_house):
+
+    try:
+        name_community= cluster.iloc[0]["COMUNIDAD"]
+    except:
+        name_community = "Cluster"
+
+
+    cluster = cluster.to_crs(4326)
+    service_gdf = service_gdf.to_crs(4326)
+    secondary_gdf = secondary_gdf.to_crs(4326)
+    trunks_gdf = trunks_gdf.to_crs(4326)
+    poles = poles.to_crs(4326)
+    power_house = power_house.to_crs(4326)
 
     fig, ax = plt.subplots(figsize=(10, 10))
     
-    # Plot each GeoDataFrame with a label
-    gpd_mg.plot(ax=ax, edgecolor='black', alpha=0.2, label='Main Grid')
-    #clip_footprints .plot(ax=ax, edgecolor='red', alpha=0.4, label='Building footprints')
-    service_gdf.plot(ax=ax, edgecolor='black', alpha=0.1, label='Service drops')
-    secondary_gdf.plot(ax=ax, edgecolor='blue', alpha=0.2, label='Secondary lines')
-    trunks_gdf.plot(ax=ax, edgecolor='orange', alpha=0.2, label='Trunk lines')
-    poles.plot(ax=ax, color='green', label='Poles', markersize=1)
+    # Plot each GeoDataFrame
+    cluster.plot(ax=ax, edgecolor='black', alpha=0.2)
+    power_house.plot(ax=ax, edgecolor='red', alpha=0.7)
+    service_gdf.plot(ax=ax, edgecolor='black', alpha=0.4)
+    secondary_gdf.plot(ax=ax, edgecolor='blue', alpha=0.3)
+    trunks_gdf.plot(ax=ax, edgecolor='orange', alpha=0.7)
+    poles.plot(ax=ax, color='green', markersize=4)
     
-    # Set the aspect ratio
-    #ax.set_aspect('equal', 'box')
     
-    xmin, ymin, xmax, ymax = gpd_mg.total_bounds
+    # Set plot limits based on the total bounds of the main grid
+    xmin, ymin, xmax, ymax = cluster.total_bounds
+    ax.set_xlim(xmin - 0.001, xmax + 0.001)
+    ax.set_ylim(ymin - 0.001, ymax + 0.001)
     
-    ax.set_xlim(xmin-0.001, xmax+0.001)
-    ax.set_ylim(ymin-0.001, ymax+0.001)
-    
-    # Add a title
-    txt = ax.set_title(country +'({})'.format(name_community), size=8)
-    ax.text(0.5, -0.1, "id={} and No. Households ={}".format(id, No_Households), fontsize=10, ha='center', va='bottom', transform=ax.transAxes)
-    #ax.text(0.5, -0.2, "No. Households={}".format(row.NUMPOINTS), fontsize=10, ha='center', va='bottom', transform=ax.transAxes)
-       
-    
+    # Add title and other text
+    ax.set_title(f"{country} ({name_community})", size=8)
+    #ax.text(0.5, -0.1, f"id={id} and No. Households={No_Households}", fontsize=10, ha='center', va='bottom', transform=ax.transAxes)
+    #ax.text(0.5, -0.1, f"id={id}", fontsize=10, ha='center', va='bottom', transform=ax.transAxes)
+
     # Customize tick parameters
     ax.tick_params(axis='x', labelcolor='black', labelsize=6)
     ax.tick_params(axis='y', labelcolor='black', labelsize=6)
     
-    # Add the legend
-    ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    # Custom legend for each plotted feature
+    legend_handles = [
+        mpatches.Patch(color='black', alpha=0.2, label='Cluster'),  # Patch for cluster
+        mpatches.Patch(color='red', alpha=1, label='PV Minigrid'),  # Marker for Minigrid
+        Line2D([0], [0], color='black', lw=2, label='Service Drops'),  # Line for service drops
+        Line2D([0], [0], color='blue', lw=2, label='Secondary Lines'),  # Line for secondary lines
+        Line2D([0], [0], color='orange', lw=2, label='Trunk Lines'),  # Line for trunk lines
+        Line2D([0], [0], color='green', marker='o', lw=0, label='Poles') # Marker for poles
+        
+    ]
+    
+    # Add custom legend to the plot
+    ax.legend(handles=legend_handles, loc='best', bbox_to_anchor=(1, 1))
+    
 
-
+    plt.close(fig) 
+    
     return fig
+
+def creating_power_house_area(trunk_poles_gdf,
+                              trunk_lines_gdf,
+                              cluster_polygons, 
+                              total_grid_gdf, 
+                              households, 
+                              all_candidates_poles_gdf,
+                              installed_capacity_kw, 
+                              pole_dist=50, 
+                              buffer=25, 
+                              min_distance=500, 
+                              lenght_panel=1, 
+                              width_panel=2, 
+                              power_panel=0.4,
+                              mg_close_to_center=False,
+                              mg_close_to_edges=False):
+    
+    """
+    This function calculates an optimal location for a power house and its associated solar photovoltaic (PV) 
+    installation within a given cluster geometry with existing grid.
+    It does so by:
+    1. Buffering existing infrastructure (e.g., grid lines and households) 
+    to define areas where the power house and PV system cannot be located.
+    2. Identifying available areas in the cluster that are large enough to accommodate the required PV area,
+    which is determined by the installed capacity and panel specifications (length, width and power capacity)
+    3. Calculating the centroids of these areas and optionally adjusting their position to be near the edges or
+    center of the trunk line based on input flags.
+    4. Extending the trunk line to connect the power house to the nearest trunk pole, 
+    ensuring that the line does not intersect existing infrastructure.
+    5. Creating a polygon shape of proportional size (plus 50% factor) for the power house. If it intersects with existing infrastructure,
+    the polygon iterates through a rotation to avoid the overlapping, if possible.
+    6. Generating new poles along the extended trunk line based on the specified distance between poles.
+
+    The function outputs the minigrid area, the trunk line connecting the minigrid, and a set of new poles for the trunk line.
+    """
+       
+    #defining target_crs based on input
+    target_crs=total_grid_gdf.crs
+    
+    #Calculate area of the minigrid, plus a 50% uppersizing factor
+    no_panels = np.ceil(installed_capacity_kw/power_panel) #Total number of panels rounded up
+    area_factor = 0.5 #increase area of PV installation for power house
+    total_area_pv = lenght_panel*width_panel*no_panels*(1+area_factor)
+ 
+    #Buffering the grid and the buildings to find where NOT to locate the Minigrid
+    
+    #Buffering the grid. 
+    #Sometimes it creates a problem (GEOSException: TopologyException: No forward edges found in buffer subgraph)
+    #Exploding the geometries and buffering them seems to work
+    try:
+        grid_buffer = total_grid_gdf.buffer(buffer)  # Change the buffer size as needed in inputs of the function
+        grid_buffer = gpd.GeoDataFrame(geometry=grid_buffer, crs=target_crs)
+    except Exception:
+        grid_mg_exploded = total_grid_gdf.explode(index_parts=True)
+        grid_buffer = grid_mg_exploded.buffer(buffer)  # Change the buffer size as needed in inputs of the function
+        grid_buffer = gpd.GeoDataFrame(geometry=grid_buffer, crs=target_crs)
+    
+    #Buffering the households, joining to buffered grid and dissolving to have a single polygon.
+    households_crs=households.to_crs(target_crs)
+    households_buffer=gpd.GeoDataFrame(geometry=households_crs.buffer(buffer), crs=target_crs)
+    buffer_area = pd.concat([households_buffer, grid_buffer], ignore_index=True)
+    buffer_area= buffer_area.dissolve()
+    
+        
+    sym_diff = gpd.overlay(cluster_polygons, buffer_area , how='symmetric_difference') #Symetrical difference between cluster shape and buffered area
+    sym_diff = gpd.clip(cluster_polygons, sym_diff) #Making sure just to include areas within the clusters
+    sym_diff = sym_diff.explode(index_parts=False) #Multiple parts to single parts
+    sym_diff = sym_diff[sym_diff.geometry.type.isin(['Polygon', 'MultiPolygon'])]#Drop geometries that are not polygons
+    sym_diff["Area"]=sym_diff.area # Calculate area
+    sym_diff=sym_diff[sym_diff["Area"]>total_area_pv] #Filter out smaller areas that the needed area for pv minigrid
+    sym_diff =  sym_diff.reset_index(drop=True)
+    sym_diff_centroid = sym_diff.copy() #copy of original gpd to calculate there centroids. Another distictive points would be ideal
+    sym_diff_centroid["geometry"]=sym_diff.centroid #calculate centroids
+    sym_diff_centroid=ckdnearest_modified(sym_diff_centroid, trunk_poles_gdf) #Including index from trunk poles. This allows to extend trunk line to that point
+    sym_diff["gdB_index"] = sym_diff_centroid["gdB_index"]
+    sym_diff["dist"] = sym_diff_centroid["dist"]
+    
+    #Locate minigrid in the biggest available area. This is the default option.
+    if mg_close_to_edges == False and mg_close_to_center == False:
+        sym_diff=  sym_diff.sort_values(by="Area", ascending=False)
+    
+    if mg_close_to_center == True:
+        centroid_poles = unary_union(trunk_poles_gdf.geometry).centroid #Calculate single centroid for complete trunk geometry
+        sym_diff['dist_to_centroid'] = sym_diff_centroid['geometry'].distance(centroid_poles)
+        sym_diff = sym_diff.sort_values(by='dist_to_centroid', ascending=True)
+        sym_diff= sym_diff.reset_index(drop=True) #Reset index
+    
+    
+    if mg_close_to_edges == True:
+        edges_list = []
+        
+        for ida, geom in trunk_lines_gdf.iterrows():
+                if geom.geometry.geom_type == 'MultiLineString':
+                    for line in geom.geometry.geoms:
+                        coords = line.coords
+                        first_point = Point(coords[0])
+                        last_point = Point(coords[-1])
+                        edges_list.append(first_point)
+                        edges_list.append(last_point)
+              
+                elif geom.geometry.geom_type == 'LineString':  
+                    coords = geom.geometry.coords  
+                    first_point = Point(coords[0])
+                    last_point = Point(coords[-1])
+                    edges_list.append(first_point)
+                    edges_list.append(last_point)
+            
+                counts = Counter(edges_list)
+                edge_uniques = [item for item in edges_list if counts[item] == 1]
+                edges_gdf = gpd.GeoDataFrame(geometry=edge_uniques, crs=target_crs)
+                
+                sym_diff = sym_diff.drop(columns=["gdB_index", "dist"])
+                sym_diff_centroid=sym_diff.copy()
+                sym_diff_centroid["geometry"]=sym_diff.centroid #calculate centroids
+                original_poles= gpd.clip(trunk_poles_gdf, edges_gdf.buffer(1))
+                sym_diff_centroid=ckdnearest_modified(sym_diff_centroid, original_poles) 
+                sym_diff["gdB_index"] = sym_diff_centroid["gdB_index"]
+                sym_diff["dist"] = sym_diff_centroid["dist"]
+                sym_diff = sym_diff.sort_values(by='dist', ascending=True)
+                sym_diff =  sym_diff.reset_index(drop=True)
+    
+    area_minigrid, trunk_line_from_minigrid =\
+    finding_suitable_areas(sym_diff, total_grid_gdf, trunk_poles_gdf, total_area_pv, all_candidates_poles_gdf)
+
+    total_length = trunk_line_from_minigrid.length # Calculate the total length of the line
+    num_poles = int(np.floor(total_length.iloc[0] / pole_dist))
+    if num_poles > 0:
+        points = [trunk_line_from_minigrid.geometry.iloc[0].interpolate(i * pole_dist) for i in range(1, num_poles + 1)]
+    else:
+        points = [area_minigrid.centroid.iloc[0]]
+    
+    #Generate new poles from new trunk line to closest pole to the available area
+    new_poles_on_trunk = gpd.GeoDataFrame({'geometry': [MultiPoint(points)], 'No. Poles': len(points)}, crs=total_grid_gdf.crs)
+
+    return area_minigrid, trunk_line_from_minigrid, new_poles_on_trunk
+
+
+def create_connection_to_trunk(sym_diff, trunk_poles_gdf, target_crs):
+    #Creting new poles and line from minigrid to PV
+    starting_point=trunk_poles_gdf.iloc[sym_diff.iloc[0]['gdB_index']].geometry #Point on the trunk line
+    ending_point = sym_diff.geometry.iloc[0]#Centroid of the Free area for Minigrid PV
+    line_geometry = LineString([starting_point, ending_point])
+    from_pv_to_trunk =gpd.GeoDataFrame    ({'geometry': [line_geometry], "Length":line_geometry.length}, crs=trunk_poles_gdf.crs)                
+
+    return from_pv_to_trunk, ending_point
+
+def create_area_for_minigrid(total_area_pv, ending_point, target_crs):
+    x, y = ending_point.x,  ending_point.y
+        
+    # Calculate the side length for the square
+    side_length = math.sqrt(total_area_pv)
+    long_side = side_length/0.6
+    short_side = side_length*0.6
+    
+    # Define the corners of the square
+    corners = [
+        (x-long_side/2, y-short_side/2), # Bottom-left
+        (x +long_side/2, y-short_side/2),  # Bottom-right
+        (x +long_side/2, y+short_side/2),  # Top-right
+        (x-long_side/2, y+short_side/2),   # Top-left
+        (x-long_side/2, y-short_side/2)    # Closing the polygon
+    ]
+    
+    polygon_mg = Polygon(corners)
+    
+    polygon_mg_gdf= gpd.GeoDataFrame({'geometry': [polygon_mg]}, crs=target_crs)
+
+    return polygon_mg_gdf
+
+def rotate_polygon_minigrid(polygon, angle):
+    """
+    Rotate a polygon around a specific point by a given angle.
+    
+    Parameters:
+        polygon (Polygon): The Shapely polygon to rotate.
+        angle (float): The angle in degrees to rotate the polygon.
+        origin (tuple): The point (x, y) around which to rotate the polygon.
+        
+    Returns:
+        Polygon: The rotated polygon.
+    """
+    # Convert angle to radians
+    angle_rad = np.radians(angle)
+    
+    # Create a rotation matrix
+    cos_angle = np.cos(angle_rad)
+    sin_angle = np.sin(angle_rad)
+    
+    # Translate the polygon to the origin
+    ox, oy = polygon.centroid.x, polygon.centroid.y
+    rotated_coords = []
+    
+    for x, y in polygon.exterior.coords:
+        # Translate point to origin
+        x_translated = x - ox
+        y_translated = y - oy
+        
+        # Apply rotation
+        x_rotated = cos_angle * x_translated - sin_angle * y_translated
+        y_rotated = sin_angle * x_translated + cos_angle * y_translated
+        
+        # Translate back
+        rotated_coords.append((x_rotated + ox, y_rotated + oy))
+    
+    # Create a new rotated polygon
+    return Polygon(rotated_coords)
+
+
+def ckdnearest_modified(gdA, gdB):
+    # This method finds the nearest point of set B for each point in set A 
+    try:
+        nA = np.array(list(gdA.geometry.apply(lambda x: (x.x, x.y))))
+        nB = np.array(list(gdB.geometry.apply(lambda x: (x.x, x.y))))
+        btree = cKDTree(nB)
+        dist, idx = btree.query(nA, k=1) 
+    except:
+        gdA = gdA.explode(index_parts=False)
+        gdB = gdB.explode(index_parts=False)
+        nA = np.array(list(gdA.geometry.apply(lambda x: (x.x, x.y))))
+        nB = np.array(list(gdB.geometry.apply(lambda x: (x.x, x.y))))
+        btree = cKDTree(nB)
+        dist, idx = btree.query(nA, k=1)
+        
+    # Retain the original index from gdB
+    gdB_nearest = gdB.iloc[idx].drop(columns="geometry")
+    gdB_nearest['gdB_index'] = gdB_nearest.index  # Add the index as a column
+
+    # Concatenate the DataFrames
+    gdf = pd.concat(
+        [
+            gdA.reset_index(drop=True),
+            gdB_nearest.reset_index(drop=True),  # Reset index for alignment
+            pd.Series(dist, name='dist')
+        ], 
+        axis=1
+    )
+    return gdf
+
+def finding_suitable_areas(sym_diff, total_grid_gdf, trunk_poles_gdf, total_area_pv, all_candidates_poles_gdf):
+    for idb in sym_diff.index:
+        sym_diff_row = gpd.GeoDataFrame(geometry=[sym_diff.loc[idb].geometry], crs=sym_diff.crs)
+        posibble_locations_minigrid = gpd.clip(sym_diff_row, all_candidates_poles_gdf)
+        if posibble_locations_minigrid.empty or len(posibble_locations_minigrid)<=5:
+            posibble_locations_minigrid = create_points_in_polygon(sym_diff_row)
+        posibble_locations_minigrid = posibble_locations_minigrid.explode(index_parts=False)
+        #posibble_locations_minigrid = posibble_locations_minigrid.reset_index()
+        posibble_locations_minigrid = ckdnearest_modified(posibble_locations_minigrid, trunk_poles_gdf)
+        
+        if len(posibble_locations_minigrid[posibble_locations_minigrid["dist"] > 100])==0:
+            posibble_locations_minigrid = posibble_locations_minigrid
+        else:
+           posibble_locations_minigrid=posibble_locations_minigrid[posibble_locations_minigrid["dist"] > 100]
+     
+        area_minigrid, trunk_line_from_minigrid = building_infrastructure(total_grid_gdf,
+                                                                         posibble_locations_minigrid, 
+                                                                         trunk_poles_gdf, 
+                                                                         total_area_pv)
+        if area_minigrid is not None:
+            return area_minigrid, trunk_line_from_minigrid  # Removed break here
+        
+
+
+def building_infrastructure(total_grid_gdf, sym_diff_centroid, trunk_poles_gdf, total_area_pv):
+    sym_diff_centroid = sym_diff_centroid.sort_values(by="dist", ascending=True)
+    area_minigrid = None
+    trunk_line_from_minigrid = None 
+    target_crs = total_grid_gdf.crs
+    total_grid_dissolved = total_grid_gdf.dissolve().geometry[0]  # Dissolve grid to have a single geometry
+        
+    for idz in sym_diff_centroid.index:
+        row_centroid = sym_diff_centroid.loc[idz]
+        row_centroid_gdf = gpd.GeoDataFrame([row_centroid], columns=sym_diff_centroid.columns, crs=sym_diff_centroid.crs)
+        trunk_line_from_minigrid, ending_point = create_connection_to_trunk(row_centroid_gdf, trunk_poles_gdf, target_crs)
+
+        if trunk_line_from_minigrid.empty: 
+            continue
+
+        intersections = trunk_line_from_minigrid.iloc[0].geometry.intersection(total_grid_dissolved)
+
+        if intersections.geom_type == "Point" or intersections.geom_type == "LineString":
+            area_minigrid = create_area_for_minigrid(total_area_pv, ending_point, target_crs)
+            intersect_polygon_minigrids = area_minigrid.geometry[0].intersection(total_grid_dissolved)
+
+            if intersect_polygon_minigrids.is_empty:
+                return area_minigrid, trunk_line_from_minigrid
+                break
+            else:
+                polygon_geometry = area_minigrid.geometry[0]
+                angles = range(0, 181, 15)
+
+                for angle in angles:
+                    polygon_mg = rotate_polygon_minigrid(polygon_geometry, angle)
+                    intersect_polygon_minigrids = polygon_mg.intersection(total_grid_dissolved)
+                    if intersect_polygon_minigrids.is_empty:
+                        area_minigrid = gpd.GeoDataFrame(geometry=[polygon_mg], crs=target_crs)
+                        return area_minigrid, trunk_line_from_minigrid
+                        break
+
+    if area_minigrid is None and trunk_line_from_minigrid is None:
+        row_centroid_gdf = gpd.GeoDataFrame(geometry=sym_diff_centroid.iloc[0].geometry, crs=sym_diff_centroid.crs)
+        trunk_line_from_minigrid, ending_point = create_connection_to_trunk(row_centroid_gdf, trunk_poles_gdf, target_crs)
+        area_minigrid = create_area_for_minigrid(total_area_pv, ending_point, target_crs)
+        return area_minigrid, trunk_line_from_minigrid
+
+    return area_minigrid, trunk_line_from_minigrid
+
+    return area_minigrid, trunk_line_from_minigrid
+
+def create_points_in_polygon(polygon_in_cluster_gdf):
+
+    polygon_in_cluster=polygon_in_cluster_gdf.geometry.iloc[0]
+    
+    # Create a grid of points within the bounding box of the polygon
+    minx, miny, maxx, maxy = polygon_in_cluster.bounds
+    
+    # Define the number of points you want along each axis (adjust spacing)
+    x_points = 10
+    y_points = 10
+    
+    # Generate grid points
+    x_grid = np.linspace(minx, maxx, x_points)
+    y_grid = np.linspace(miny, maxy, y_points)
+    grid_points = [Point(x, y) for x in x_grid for y in y_grid]
+    
+    # Filter points that are inside the polygon
+    points_in_polygon = [point for point in grid_points if polygon_in_cluster.contains(point)]
+    
+    # Select 20 points (or fewer if the grid doesn't contain enough)
+    num_points = min(20, len(points_in_polygon))
+    selected_points = points_in_polygon[:num_points]
+    
+    # Convert to a GeoDataFrame for structured output
+    gdf_points = gpd.GeoDataFrame(geometry=selected_points, crs=polygon_in_cluster_gdf.crs)
+
+    return gdf_points
+
+
+
