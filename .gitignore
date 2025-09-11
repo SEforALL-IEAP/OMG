@@ -7,3 +7,5 @@
 .idea/
 *.jpg
 *.gpkg
+Output_Data/
+Input_data/
