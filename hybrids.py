@@ -80,6 +80,8 @@ def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
     k_t = 0.005  # temperature factor of PV panels
     t_cell = temp + 0.0256 * ghi  # PV cell temperature
     pv_gen = pv_capacity * 0.9 * ghi / 1000 * (1 - k_t * (t_cell - 25))  # PV generation in the hour, after inverter losses. 0.9 is the derating efficiency of the PV panels
+
+    pv_gen = ghi * pv_capacity * 0.9 # 0.9 is the derating efficiency of the PV panels
     net_load = load - pv_gen * inv_eff  # remaining load not met by PV panels
     return net_load, pv_gen
 
@@ -289,7 +291,7 @@ def calculate_hybrid_lcoe(diesel_price, end_year, start_year, annual_demand,
         if year % pv_life == 0:
             pv_investment = pv_panel_size * pv_cost
         if year % pv_inverter_life == 0:
-            pv_inverter_investment = pv_panel_size * pv_inverter_cost # PV inverter sized based on the PV panel rated capacity
+            pv_inverter_investment = max(load_curve) * pv_inverter_cost # PV inverter sized based on the peak demand in the year. ToDo, should there be a DC/AC ratio?
         if year % charge_controller_life == 0:
             charge_controller_investment = pv_panel_size * charge_controller  # Charge controller, sized based on the PV panel rated capacity
         if year % battery_life == 0:
