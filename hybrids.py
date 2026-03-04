@@ -20,6 +20,8 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, b
     battery = float(configuration[1])
     usable_battery = battery * dod_max  # ensure the battery never goes below max depth of discharge
     diesel = float(configuration[2])
+    if diesel < 0.5:
+        diesel = 0
 
     annual_demand = load_curve.sum()
 
@@ -72,7 +74,7 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, b
                                                   battery_inverter_om=battery_inverter_om)
 
     return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
-        battery_life, pv, diesel, npc, fuel_usage, annual_om, pv_gen
+        battery_life, pv, diesel, npc, fuel_usage, annual_om, pv_gen, excess_gen_share, battery_soc_curve, net_load
 
 @numba.njit
 def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
@@ -81,8 +83,8 @@ def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
     t_cell = temp + 0.0256 * ghi  # PV cell temperature
     pv_gen = pv_capacity * 0.9 * ghi / 1000 * (1 - k_t * (t_cell - 25))  # PV generation in the hour, after inverter losses. 0.9 is the derating efficiency of the PV panels
 
-    pv_gen = ghi * pv_capacity * 0.9 # 0.9 is the derating efficiency of the PV panels
-    net_load = load - pv_gen * inv_eff  # remaining load not met by PV panels
+    pv_gen = ghi * pv_capacity * inv_eff
+    net_load = load - pv_gen  # remaining load not met by PV panels
     return net_load, pv_gen
 
 @numba.njit
@@ -187,9 +189,10 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
 
     net_load -= diesel_gen  # Remaining load after diesel generation, used for subsequent battery calculations etc.
 
-    soc_prev = soc  # Store the battery SOC before the hour in a variable to ensure battery is not over-used
+    soc_prev = soc * 1  # Store the battery SOC before the hour in a variable to ensure battery is not over-used
 
     soc_usage = 0  # Variable to store how much the SOC changes during the hour
+
     if (net_load > 0) & (battery_size > 0):
         if diesel_gen > 0:
             # If diesel generation is used, but is smaller than load, battery is discharged
@@ -203,12 +206,14 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
             soc_usage = max(net_load * n_chg * battery_inv_eff / battery_size, -c_rate_chg)
         if diesel_gen == 0:
             # If net load is negative, and no diesel has been used, excess PV gen is used to charge battery
-            soc_usage = max(net_load * n_chg / battery_size, -c_rate_chg) # ToDo is battery and PV inverters needed if PV is charging battery?
+            soc_usage = max(net_load * n_chg * battery_inv_eff / battery_size, -c_rate_chg)
 
     if net_load >= 0:
         soc -= min(soc_usage, c_rate_dis, soc_prev)  # Update SOC based on the calculated SOC usage, ensuring battery is not over-used
+        if min(soc_usage, c_rate_dis, soc_prev) < 0: # ToDo debugging only, remove later
+            print('Error: negative SOC usage during discharge')
     else:
-        soc -= max(soc_usage, -c_rate_chg)
+        soc -= soc_usage
 
     if soc < 0:
         print('Error: SOC below 0')
@@ -228,7 +233,7 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
             # If the SOC usage was larger than what the battery could provide, there is unmet demand
             annual_unmet_demand += (soc_usage - min(soc_prev, c_rate_dis)) * n_dis * battery_inv_eff * battery_size
 
-        if soc_prev - soc_usage > 1:
+        if (soc_prev - soc_usage > 1) or (soc > 1):
             # If State of Charge is larger than 1, that means there was excess PV/diesel generation
             # If so, the annual excess generation variable is updated and the SOC is set to full (1)
             annual_excess_gen += (soc_prev + soc_usage - 1) / n_chg / battery_inv_eff * battery_size

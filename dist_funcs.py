@@ -511,9 +511,11 @@ def create_candidate_poles(polygon, trunk, distance, buffer=50, plot=True):
             if intersection.geom_type == 'Point':
                 intersection_points_2.append(intersection)
             elif intersection.geom_type == 'MultiPoint':
-                print('MultiPoint')
+                pass
+                # print('MultiPoint') for debugging
             else:
-                print(intersection.geom_type)
+                pass
+                #print(intersection.geom_type) for debugging
                 #for p in intersection.geoms:
                 #    print(p)
                 #pass  # ToDo in case there are more than one intersection
