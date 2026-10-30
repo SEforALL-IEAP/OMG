@@ -73,8 +73,9 @@ def find_least_cost_option(configuration, temp, ghi, hour_numbers, load_curve, b
                                                   battery_om=battery_om,
                                                   battery_inverter_om=battery_inverter_om)
 
-    return lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
-        battery_life, pv, diesel, npc, fuel_usage, annual_om, pv_gen, excess_gen_share, battery_soc_curve, net_load
+    return (lcoe, unmet_demand_share, diesel_generation_share, investment, fuel_cost, om_cost, battery, \
+        battery_life, pv, diesel, npc, fuel_usage, annual_om, pv_gen, excess_gen_share, battery_soc_curve, net_load,
+            diesel_gen_curve)
 
 @numba.njit
 def pv_generation(temp, ghi, pv_capacity, load, inv_eff):
@@ -102,13 +103,14 @@ def year_simulation(battery_size, diesel_capacity, net_load, hour_numbers, batte
     # Arrays for tracking hourly values throughout the year (for plotting purposes)
     diesel_gen_curve = []
     battery_soc_curve = []
+    excess_curve = []
 
     # Run the simulation for each hour during one year
     for hour in hour_numbers:
         load = net_load[int(hour)]
 
         diesel_gen, annual_fuel_consumption, annual_diesel_gen, annual_battery_use, soc, annual_unmet_demand, \
-            annual_excess_gen = hour_simulation(hour, soc, load, diesel_capacity, annual_fuel_consumption,
+            annual_excess_gen, excess_gen = hour_simulation(hour, soc, load, diesel_capacity, annual_fuel_consumption,
                                                 annual_diesel_gen,
                                                 battery_inv_eff, n_dis, n_chg, battery_size, annual_battery_use,
                                                 annual_unmet_demand,
@@ -117,6 +119,7 @@ def year_simulation(battery_size, diesel_capacity, net_load, hour_numbers, batte
         # Update plotting arrays
         diesel_gen_curve.append(diesel_gen)
         battery_soc_curve.append(soc)
+        excess_curve.append(excess_gen)
 
     # When a full year has been simulated, calculate battery life and performance metrics
     if (battery_size > 0) & (annual_battery_use > 0):
@@ -129,7 +132,7 @@ def year_simulation(battery_size, diesel_capacity, net_load, hour_numbers, batte
     diesel_generation_share = annual_diesel_gen / annual_demand
 
     return diesel_generation_share, battery_life, unmet_demand_share, annual_fuel_consumption, \
-        excess_gen_share, battery_soc_curve, diesel_gen_curve
+        excess_curve, battery_soc_curve, diesel_gen_curve
 
 
 @numba.njit
@@ -227,6 +230,7 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
     annual_battery_use += battery_use
 
     # Calculate if there was any unmet demand or excess energy generation during the hour
+    excess_gen = 0
 
     if battery_size > 0:
         if soc_usage > min(soc_prev, c_rate_dis):
@@ -236,8 +240,9 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
         if (soc_prev - soc_usage > 1) or (soc > 1):
             # If State of Charge is larger than 1, that means there was excess PV/diesel generation
             # If so, the annual excess generation variable is updated and the SOC is set to full (1)
-            annual_excess_gen += (soc_prev + soc_usage - 1) / n_chg / battery_inv_eff * battery_size
+            annual_excess_gen += -(soc_prev + soc_usage - 1) / n_chg / battery_inv_eff * battery_size
             soc = 1
+            excess_gen = -(soc_prev + soc_usage - 1) / n_chg / battery_inv_eff * battery_size
     else:  # This part handles the same case, if no battery is included in the system
         if net_load > 0:
             annual_unmet_demand += net_load
@@ -245,7 +250,7 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
             annual_excess_gen -= net_load
 
     return diesel_gen, annual_fuel_consumption, annual_diesel_gen, annual_battery_use, \
-        soc, annual_unmet_demand, annual_excess_gen
+        soc, annual_unmet_demand, annual_excess_gen, excess_gen
 
 
 @numba.njit
