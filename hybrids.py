@@ -105,9 +105,12 @@ def year_simulation(battery_size, diesel_capacity, net_load, hour_numbers, batte
     battery_soc_curve = []
     excess_curve = []
 
-    # Run the simulation for each hour during one year
-    for hour in hour_numbers:
-        load = net_load[int(hour)]
+    # Run the simulation for each hour during one year.
+    # t is the hour of the year, used to read the load. hour is the hour of the day (0-23), used by the dispatch
+    # rules in hour_simulation. This works whether hour_numbers holds hours of the day (0-23) or of the year (0-8759)
+    for t in range(len(hour_numbers)):
+        hour = hour_numbers[t] % 24
+        load = net_load[t]
 
         diesel_gen, annual_fuel_consumption, annual_diesel_gen, annual_battery_use, soc, annual_unmet_demand, \
             annual_excess_gen, excess_gen = hour_simulation(hour, soc, load, diesel_capacity, annual_fuel_consumption,
@@ -237,17 +240,20 @@ def hour_simulation(hour, soc, net_load, diesel_capacity, annual_fuel_consumptio
             # If the SOC usage was larger than what the battery could provide, there is unmet demand
             annual_unmet_demand += (soc_usage - min(soc_prev, c_rate_dis)) * n_dis * battery_inv_eff * battery_size
 
-        if (soc_prev - soc_usage > 1) or (soc > 1):
-            # If State of Charge is larger than 1, that means there was excess PV/diesel generation
-            # If so, the annual excess generation variable is updated and the SOC is set to full (1)
-            annual_excess_gen += -(soc_prev + soc_usage - 1) / n_chg / battery_inv_eff * battery_size
-            soc = 1
-            excess_gen = -(soc_prev + soc_usage - 1) / n_chg / battery_inv_eff * battery_size
+        if net_load < 0:
+            # Surplus PV/diesel generation that could not be stored is excess generation (positive, kWh in the hour).
+            # This is the surplus minus what went into the battery, which is limited both by the room left in the
+            # battery (1 - soc_prev) and by the charge rate (soc_usage is already capped at -c_rate_chg)
+            stored = min(-soc_usage, 1 - soc_prev)
+            excess_gen = max(-net_load - stored / n_chg / battery_inv_eff * battery_size, 0)
+            annual_excess_gen += excess_gen
+            soc = min(soc, 1)
     else:  # This part handles the same case, if no battery is included in the system
         if net_load > 0:
             annual_unmet_demand += net_load
         if net_load < 0:
             annual_excess_gen -= net_load
+            excess_gen = -net_load
 
     return diesel_gen, annual_fuel_consumption, annual_diesel_gen, annual_battery_use, \
         soc, annual_unmet_demand, annual_excess_gen, excess_gen
